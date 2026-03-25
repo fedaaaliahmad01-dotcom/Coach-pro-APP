@@ -1,0 +1,3333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coach Pro - Ultimate Training App</title>
+    
+    <!-- PDF Export Libraries for APK/WebView -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme (Default) */
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --primary-light: #3b82f6;
+            --secondary: #1e40af;
+            --accent: #0ea5e9;
+            --bg: #f3f4f6;
+            --bg-card: #ffffff;
+            --bg-input: #ffffff;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --text-muted: #9ca3af;
+            --border: #e5e7eb;
+            --border-focus: #3b82f6;
+            --shadow: rgba(0, 0, 0, 0.1);
+            --shadow-lg: rgba(0, 0, 0, 0.15);
+            --danger: #dc2626;
+            --success: #16a34a;
+            --warning: #f59e0b;
+            --info: #0ea5e9;
+            --gradient-primary: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            --gradient-success: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+            --gradient-warning: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            --gradient-danger: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            --gradient-info: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+            --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --card-shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --border-radius: 12px;
+            --border-radius-sm: 8px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="dark"] {
+            /* Dark Theme */
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --primary-light: #60a5fa;
+            --secondary: #1e40af;
+            --accent: #38bdf8;
+            --bg: #0f172a;
+            --bg-card: #1e293b;
+            --bg-input: #334155;
+            --text: #f1f5f9;
+            --text-light: #94a3b8;
+            --text-muted: #64748b;
+            --border: #334155;
+            --border-focus: #3b82f6;
+            --shadow: rgba(0, 0, 0, 0.3);
+            --shadow-lg: rgba(0, 0, 0, 0.5);
+            --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+            --card-shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+            transition: var(--transition);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: var(--border-radius-sm);
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            margin: 5px;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:active::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px var(--shadow-lg);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: #ffffff;
+        }
+
+        .btn-danger {
+            background: var(--gradient-danger);
+            color: #ffffff;
+        }
+
+        .btn-success {
+            background: var(--gradient-success);
+            color: #ffffff;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-outline:hover {
+            background: var(--primary);
+            color: #ffffff;
+        }
+
+        .btn-warning {
+            background: var(--gradient-warning);
+            color: #ffffff;
+        }
+
+        .btn-info {
+            background: var(--gradient-info);
+            color: #ffffff;
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 12px;
+        }
+
+        .btn-icon {
+            padding: 10px;
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            justify-content: center;
+        }
+
+        /* Form Elements */
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 16px;
+            margin: 8px 0 16px;
+            border: 2px solid var(--border);
+            border-radius: var(--border-radius-sm);
+            font-size: 14px;
+            transition: var(--transition);
+            background: var(--bg-input);
+            color: var(--text);
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        input:disabled, select:disabled, textarea:disabled {
+            background: var(--bg);
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        label {
+            font-weight: 600;
+            display: block;
+            margin-top: 12px;
+            color: var(--text);
+            font-size: 14px;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            padding: 24px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            margin-bottom: 24px;
+            border: 1px solid var(--border);
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            box-shadow: var(--card-shadow-hover);
+            transform: translateY(-2px);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .card-title {
+            color: var(--text);
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        /* Grid Layouts */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        .grid-5 {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 16px;
+        }
+
+        /* Headings */
+        h1 {
+            font-size: 32px;
+            color: var(--text);
+            margin-bottom: 16px;
+            font-weight: 800;
+        }
+
+        h2 {
+            font-size: 26px;
+            color: var(--text);
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        h3 {
+            font-size: 20px;
+            color: var(--primary);
+            margin-bottom: 16px;
+            font-weight: 600;
+        }
+
+        h4 {
+            font-size: 16px;
+            color: var(--text);
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        /* Login Screen */
+        #login-screen {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--gradient-primary);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+        }
+
+        .login-box {
+            background: var(--bg-card);
+            padding: 48px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            width: 420px;
+            box-shadow: 0 20px 60px var(--shadow-lg);
+            animation: slideIn 0.5s ease;
+            border: 1px solid var(--border);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .pin-input {
+            text-align: center;
+            font-size: 36px;
+            letter-spacing: 12px;
+            width: 220px;
+            margin: 24px auto;
+            font-weight: 700;
+            color: var(--primary);
+            background: var(--bg-input);
+            border: 2px solid var(--border);
+        }
+
+        .login-logo {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            background: var(--bg-input);
+            border: 2px solid var(--border);
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            font-size: 20px;
+        }
+
+        .theme-toggle:hover {
+            transform: rotate(180deg);
+            border-color: var(--primary);
+        }
+
+        /* Navigation */
+        nav {
+            background: var(--bg-card);
+            padding: 16px 24px;
+            box-shadow: var(--card-shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 3px solid var(--primary);
+            transition: var(--transition);
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-brand-icon {
+            font-size: 28px;
+        }
+
+        .nav-brand-text {
+            font-weight: 800;
+            font-size: 22px;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-signature {
+            font-size: 10px;
+            color: var(--text-light);
+            margin-left: 8px;
+            font-weight: 600;
+        }
+
+        .nav-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+
+        /* Sections */
+        .section {
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .section-title {
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 16px;
+            margin-bottom: 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        /* Day Selector */
+        .day-selector {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+            margin-bottom: 28px;
+        }
+
+        .day-btn {
+            padding: 16px 10px;
+            border: 2px solid var(--border);
+            background: var(--bg-input);
+            color: var(--text);
+            cursor: pointer;
+            border-radius: var(--border-radius-sm);
+            font-weight: 600;
+            transition: var(--transition);
+            font-size: 13px;
+        }
+
+        .day-btn:hover {
+            background: var(--primary);
+            color: #ffffff;
+            transform: scale(1.05);
+            border-color: var(--primary);
+        }
+
+        .day-btn.active {
+            background: var(--gradient-primary);
+            color: #ffffff;
+            transform: scale(1.08);
+            box-shadow: 0 4px 12px var(--shadow-lg);
+            border-color: var(--primary);
+        }
+
+        .day-btn.rest-day {
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        .day-btn.rest-day.active {
+            background: var(--gradient-danger);
+            color: #ffffff;
+        }
+
+        .day-btn.rest-day::after {
+            content: ' 🛌';
+        }
+
+        /* Exercise Cards */
+        .exercise-card {
+            background: var(--bg-input);
+            padding: 18px;
+            border: 2px solid var(--border);
+            margin-bottom: 14px;
+            border-radius: var(--border-radius-sm);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .exercise-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 5px;
+            background: var(--primary);
+        }
+
+        .exercise-card.large-muscle::before {
+            background: var(--primary);
+        }
+
+        .exercise-card.small-muscle::before {
+            background: var(--success);
+        }
+
+        .exercise-card.stretch::before {
+            background: var(--info);
+        }
+
+        .exercise-card.cardio::before {
+            background: var(--warning);
+        }
+
+        .exercise-card:hover {
+            border-color: var(--primary);
+            background: var(--bg-card);
+            transform: translateX(5px);
+            box-shadow: var(--card-shadow);
+        }
+
+        .exercise-info {
+            flex: 1;
+        }
+
+        .exercise-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+
+        .exercise-muscle {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 14px;
+            background: rgba(59, 130, 246, 0.1);
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+
+        .exercise-day {
+            font-size: 12px;
+            color: var(--text-light);
+            background: var(--bg);
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+
+        .exercise-name {
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--text);
+            margin: 6px 0;
+        }
+
+        .exercise-method {
+            font-size: 12px;
+            color: #ffffff;
+            background: var(--gradient-primary);
+            padding: 5px 12px;
+            border-radius: 20px;
+            display: inline-block;
+            font-weight: 600;
+        }
+
+        .exercise-method.advanced {
+            background: var(--gradient-warning);
+        }
+
+        .exercise-method.expert {
+            background: var(--gradient-danger);
+        }
+
+        .exercise-sets-reps {
+            font-size: 13px;
+            color: var(--text-light);
+            background: var(--bg);
+            padding: 4px 10px;
+            border-radius: 20px;
+            margin-left: 8px;
+        }
+
+        .delete-btn {
+            color: var(--danger);
+            border: none;
+            background: rgba(220, 38, 38, 0.1);
+            cursor: pointer;
+            font-size: 18px;
+            padding: 10px 14px;
+            border-radius: 50%;
+            transition: var(--transition);
+            font-weight: 700;
+        }
+
+        .delete-btn:hover {
+            background: var(--danger);
+            color: #ffffff;
+            transform: rotate(90deg);
+        }
+
+        /* Toggle Switch */
+        .toggle-switch {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 16px 0;
+            padding: 12px;
+            background: var(--bg);
+            border-radius: var(--border-radius-sm);
+            border: 2px solid var(--border);
+        }
+
+        .toggle-switch input {
+            width: 20px;
+            height: 20px;
+            margin: 0;
+            cursor: pointer;
+        }
+
+        .toggle-switch label {
+            margin: 0;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        /* Method Details Box */
+        .method-details {
+            background: var(--bg);
+            padding: 18px;
+            border-radius: var(--border-radius-sm);
+            margin: 16px 0;
+            border-left: 5px solid var(--primary);
+            border: 2px solid var(--border);
+        }
+
+        .method-details h4 {
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-size: 15px;
+        }
+
+        .method-details p {
+            font-size: 14px;
+            color: var(--text-light);
+            line-height: 1.7;
+        }
+
+        .method-level {
+            display: inline-block;
+            font-size: 11px;
+            padding: 3px 10px;
+            border-radius: 12px;
+            margin-left: 10px;
+            font-weight: 600;
+        }
+
+        .method-level.beginner {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .method-level.intermediate {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .method-level.advanced {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .method-level.expert {
+            background: var(--gradient-primary);
+            color: #ffffff;
+        }
+
+        /* Player Info Display */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .info-item {
+            padding: 16px;
+            background: var(--bg);
+            border-radius: var(--border-radius-sm);
+            border: 2px solid var(--border);
+            transition: var(--transition);
+        }
+
+        .info-item:hover {
+            border-color: var(--primary);
+            background: var(--bg-input);
+            transform: translateY(-2px);
+        }
+
+        .info-label {
+            font-size: 11px;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .info-value {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .info-value.coach {
+            color: var(--primary);
+            font-weight: 800;
+        }
+
+        /* Nutrition Display */
+        .nutrition-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .nutrition-item {
+            text-align: center;
+            padding: 20px;
+            background: var(--gradient-primary);
+            color: #ffffff;
+            border-radius: var(--border-radius-sm);
+            box-shadow: 0 4px 12px var(--shadow-lg);
+            transition: var(--transition);
+        }
+
+        .nutrition-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px var(--shadow-lg);
+        }
+
+        .nutrition-value {
+            font-size: 28px;
+            font-weight: 800;
+        }
+
+        .nutrition-label {
+            font-size: 12px;
+            opacity: 0.95;
+            margin-top: 6px;
+            font-weight: 500;
+        }
+
+        /* BMI Display */
+        .bmi-display {
+            text-align: center;
+            padding: 20px;
+            border-radius: var(--border-radius-sm);
+            margin: 16px 0;
+            border: 3px solid;
+            background: var(--bg);
+        }
+
+        .bmi-underweight {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            border-color: #3b82f6;
+            color: #1e40af;
+        }
+
+        .bmi-normal {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            border-color: #10b981;
+            color: #065f46;
+        }
+
+        .bmi-overweight {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-color: #f59e0b;
+            color: #92400e;
+        }
+
+        .bmi-obese {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            border-color: #ef4444;
+            color: #991b1b;
+        }
+
+        .bmi-value {
+            font-size: 42px;
+            font-weight: 800;
+            margin: 10px 0;
+        }
+
+        .bmi-category {
+            font-size: 18px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .bmi-info {
+            font-size: 13px;
+            margin-top: 10px;
+            opacity: 0.9;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            border-bottom: 3px solid var(--border);
+            margin-bottom: 28px;
+            gap: 4px;
+        }
+
+        .tab {
+            padding: 14px 28px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: var(--transition);
+            font-weight: 600;
+            font-size: 15px;
+            color: var(--text-light);
+            background: var(--bg);
+            border-radius: var(--border-radius-sm) var(--border-radius-sm) 0 0;
+        }
+
+        .tab:hover {
+            color: var(--primary);
+            background: var(--bg-input);
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+            background: var(--bg-card);
+        }
+
+        /* Status Messages */
+        .status-message {
+            padding: 16px 20px;
+            border-radius: var(--border-radius-sm);
+            margin: 16px 0;
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .status-success {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            color: #065f46;
+            border: 2px solid #10b981;
+        }
+
+        .status-error {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            color: #991b1b;
+            border: 2px solid #ef4444;
+        }
+
+        .status-info {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            color: #1e40af;
+            border: 2px solid #3b82f6;
+        }
+
+        .status-warning {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            color: #92400e;
+            border: 2px solid #f59e0b;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 40px;
+            color: var(--text-light);
+            background: var(--bg);
+            border-radius: var(--border-radius);
+            border: 2px dashed var(--border);
+        }
+
+        .empty-state-icon {
+            font-size: 56px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state-text {
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            padding: 36px;
+            border-radius: var(--border-radius);
+            width: 520px;
+            max-width: 90%;
+            box-shadow: 0 20px 60px var(--shadow-lg);
+            animation: modalSlide 0.3s ease;
+            border: 1px solid var(--border);
+        }
+
+        @keyframes modalSlide {
+            from {
+                opacity: 0;
+                transform: scale(0.9) translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        /* Level Badge */
+        .level-badge {
+            display: inline-block;
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .level-newbie {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .level-beginner {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .level-intermediate {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .level-advanced {
+            background: #fed7aa;
+            color: #c2410c;
+        }
+
+        .level-professional {
+            background: var(--gradient-primary);
+            color: #ffffff;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .grid-4, .grid-5 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .nutrition-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .grid-2, .grid-3, .grid-4, .grid-5, .info-grid, .nutrition-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .day-selector {
+                grid-template-columns: repeat(4, 1fr);
+            }
+
+            .nav-links {
+                width: 100%;
+                justify-content: center;
+                margin-top: 16px;
+            }
+
+            .exercise-card {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 14px;
+            }
+
+            .delete-btn {
+                align-self: flex-end;
+            }
+
+            .tabs {
+                flex-wrap: wrap;
+            }
+
+            .tab {
+                padding: 12px 20px;
+                font-size: 13px;
+            }
+        }
+
+        /* Print Styles */
+        @media print {
+            body {
+                background: white;
+            }
+
+            nav, .no-print, #login-screen, .modal, .theme-toggle {
+                display: none !important;
+            }
+
+            .card {
+                box-shadow: none;
+                border: 2px solid #e5e7eb;
+                page-break-inside: avoid;
+            }
+
+            .container {
+                max-width: 100%;
+                padding: 10px;
+            }
+
+            .btn {
+                display: none;
+            }
+
+            .exercise-card {
+                break-inside: avoid;
+            }
+
+            .bmi-display {
+                page-break-inside: avoid;
+            }
+
+            .print-signature {
+                display: block !important;
+                margin-top: 30px;
+                padding-top: 15px;
+                border-top: 2px solid #e5e7eb;
+                text-align: center;
+                font-size: 12px;
+                color: var(--text-light);
+            }
+
+            .print-coach-name {
+                display: block !important;
+                font-size: 14px;
+                color: var(--primary);
+                font-weight: 700;
+                margin-top: 10px;
+            }
+        }
+
+        .print-signature {
+            display: none;
+        }
+
+        .print-coach-name {
+            display: none;
+        }
+
+        /* Warning Box for Method-Level Mismatch */
+        .level-warning {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 2px solid var(--warning);
+            border-left: 5px solid var(--warning);
+            padding: 14px;
+            border-radius: var(--border-radius-sm);
+            margin: 12px 0;
+            font-size: 13px;
+            color: #92400e;
+        }
+
+        .level-warning strong {
+            color: #b45309;
+        }
+
+        /* Sets and Reps Input */
+        .sets-reps-input {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin: 12px 0;
+        }
+
+        .sets-reps-input input {
+            margin: 0;
+            padding: 8px;
+            font-size: 13px;
+        }
+
+        .sets-reps-label {
+            font-size: 12px;
+            color: var(--text-light);
+            margin-bottom: 4px;
+        }
+
+        /* Method Level Indicator */
+        .method-level-indicator {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-left: 8px;
+        }
+
+        .method-level-indicator.newbie {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .method-level-indicator.beginner {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .method-level-indicator.intermediate {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .method-level-indicator.advanced {
+            background: #fed7aa;
+            color: #c2410c;
+        }
+
+        .method-level-indicator.professional {
+            background: var(--gradient-danger);
+            color: #ffffff;
+        }
+
+        .method-disabled {
+            opacity: 0.5;
+            pointer-events: none;
+            background: var(--bg) !important;
+        }
+
+        /* Auto-calculate hint */
+        .auto-calc-hint {
+            font-size: 12px;
+            color: var(--info);
+            margin-top: -10px;
+            margin-bottom: 10px;
+            font-style: italic;
+        }
+
+        /* Signature Style */
+        .signature {
+            font-size: 11px;
+            color: var(--text-light);
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border);
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        .signature-highlight {
+            color: var(--primary);
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Login Screen -->
+    <div id="login-screen">
+        <div class="login-box">
+            <div class="login-logo">💪</div>
+            <h1>Coach Pro</h1>
+            <p style="color: var(--text-light); margin: 16px 0 24px;">Enter PIN Code to Access Your Dashboard</p>
+            <p id="pin-message" class="status-message status-error hidden"></p>
+            <input type="password" id="pin-input" class="pin-input" maxlength="4" placeholder="0000">
+            <button class="btn btn-primary" style="width: 100%;" onclick="checkPin()">
+                🔓 Unlock App
+            </button>
+            <br>
+            <button class="btn btn-outline" onclick="showResetPin()">Reset PIN</button>
+            
+            <div id="reset-pin-area" class="hidden" style="margin-top: 28px; padding-top: 28px; border-top: 2px solid var(--border);">
+                <h3>🔐 Change PIN Code</h3>
+                <input type="password" id="new-pin" maxlength="4" placeholder="New PIN (4 digits)">
+                <input type="password" id="confirm-pin" maxlength="4" placeholder="Confirm New PIN">
+                <p id="pin-error" class="status-message status-error hidden"></p>
+                <button class="btn btn-success" onclick="saveNewPin()">Save New PIN</button>
+                <button class="btn btn-danger" onclick="hideResetPin()">Cancel</button>
+            </div>
+            <p style="font-size: 12px; color: var(--text-light); margin-top: 36px;">Default PIN: 0000</p>
+            
+            <!-- Signature on Login Screen -->
+            <div class="signature">
+                Powered by <span class="signature-highlight">FAAJ77.QWEN</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="app-screen" class="hidden">
+        <nav>
+            <div class="nav-brand">
+                <span class="nav-brand-icon">💪</span>
+                <span class="nav-brand-text">Coach Pro</span>
+                <span class="nav-signature">| FAAJ77.QWEN</span>
+            </div>
+            <div class="nav-links no-print">
+                <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Dark/Light Mode">
+                    <span id="theme-icon">🌙</span>
+                </button>
+                <button class="btn btn-outline btn-sm" onclick="showSection('dashboard')">📋 Player View</button>
+                <button class="btn btn-outline btn-sm" onclick="showSection('players')">➕ Add Player</button>
+                <button class="btn btn-outline btn-sm" onclick="showSection('workout-builder')">🏋️ Program Builder</button>
+                <button class="btn btn-outline btn-sm" onclick="showSection('templates')">📁 Templates</button>
+                <button class="btn btn-outline btn-sm" onclick="showSection('custom-exercises')">⚙️ Custom Exercises</button>
+                <button class="btn btn-outline btn-sm" onclick="showSection('data')">💾 Data</button>
+                <button class="btn btn-danger btn-sm" onclick="lockApp()">🔒 Lock</button>
+            </div>
+        </nav>
+
+        <div class="container">
+            
+            <!-- Dashboard / Player View -->
+            <div id="dashboard" class="section">
+                <div class="section-title">
+                    <h2>📊 Player Profile & Program</h2>
+                    <button class="btn btn-primary no-print" onclick="exportPDF()">📄 Export as PDF</button>
+                </div>
+                
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">👤 Personal Information</h3>
+                            <span id="view-level-badge" class="level-badge level-beginner">Beginner</span>
+                        </div>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <div class="info-label">Player Name</div>
+                                <div class="info-value" id="view-name">-</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Coach Name</div>
+                                <div class="info-value coach" id="view-coach">-</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Weight</div>
+                                <div class="info-value" id="view-weight">- kg</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Height</div>
+                                <div class="info-value" id="view-height">- cm</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Age</div>
+                                <div class="info-value" id="view-age">-</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Gender</div>
+                                <div class="info-value" id="view-gender">-</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Body Type</div>
+                                <div class="info-value" id="view-body">-</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Goal</div>
+                                <div class="info-value" id="view-goal">-</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Level</div>
+                                <div class="info-value" id="view-level">-</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Training Split</div>
+                                <div class="info-value" id="view-split">-</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">IFBB Program</div>
+                                <div class="info-value" id="view-ifbb">-</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">🥗 Nutrition & BMI</h3>
+                        </div>
+                        <div class="nutrition-grid">
+                            <div class="nutrition-item">
+                                <div class="nutrition-value" id="view-calories">-</div>
+                                <div class="nutrition-label">Calories</div>
+                            </div>
+                            <div class="nutrition-item" style="background: var(--gradient-success);">
+                                <div class="nutrition-value" id="view-protein">-g</div>
+                                <div class="nutrition-label">Protein</div>
+                            </div>
+                            <div class="nutrition-item" style="background: var(--gradient-warning);">
+                                <div class="nutrition-value" id="view-carbs">-g</div>
+                                <div class="nutrition-label">Carbs</div>
+                            </div>
+                            <div class="nutrition-item" style="background: var(--gradient-danger);">
+                                <div class="nutrition-value" id="view-fats">-g</div>
+                                <div class="nutrition-label">Fats</div>
+                            </div>
+                            <div class="nutrition-item" style="background: var(--gradient-info);">
+                                <div class="nutrition-value" id="view-bmi">-</div>
+                                <div class="nutrition-label">BMI</div>
+                            </div>
+                        </div>
+                        
+                        <!-- BMI Detailed Display -->
+                        <div id="view-bmi-detailed" class="bmi-display bmi-normal hidden">
+                            <div class="bmi-category" id="view-bmi-category">Normal Weight</div>
+                            <div class="bmi-value" id="view-bmi-value">22.5</div>
+                            <div class="bmi-info" id="view-bmi-info">Healthy weight range for your height</div>
+                        </div>
+                        
+                        <div style="margin-top: 24px;">
+                            <label>💊 Supplements</label>
+                            <p id="view-supplements" style="background: var(--bg); padding: 14px; border-radius: var(--border-radius-sm); border: 2px solid var(--border);">-</p>
+                            <label>⚠️ PEDs</label>
+                            <p id="view-peds" style="background: rgba(220, 38, 38, 0.1); padding: 14px; border-radius: var(--border-radius-sm); border: 2px solid var(--danger);">-</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">⚕️ Medical History</h3>
+                    </div>
+                    <p id="view-medical" style="background: rgba(220, 38, 38, 0.1); padding: 18px; border-radius: var(--border-radius-sm); border-left: 5px solid var(--danger); border: 2px solid var(--danger);">No medical history recorded.</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">🏋️ Workout Program</h3>
+                        <span id="workout-day-indicator" class="level-badge level-beginner">All Days</span>
+                    </div>
+                    <div id="workout-display">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📋</div>
+                            <p class="empty-state-text">No program assigned yet. Create a program in the Program Builder.</p>
+                            <button class="btn btn-primary" onclick="showSection('workout-builder')">Create Program</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Print Signature -->
+                <div class="print-signature">
+                    <strong>Coach Pro</strong> - Powered by <span style="color: var(--primary); font-weight: 700;">FAAJ77.QWEN</span>
+                    <div class="print-coach-name" id="print-coach-name">Prepared by: Coach Name</div>
+                </div>
+            </div>
+
+            <!-- Player Management -->
+            <div id="players" class="section hidden">
+                <h2 class="section-title">➕ Add / Edit Player</h2>
+                <div class="card">
+                    <div class="grid-2">
+                        <div>
+                            <label>👤 Player Name</label>
+                            <input type="text" id="p-name" placeholder="Enter full name">
+                            
+                            <label>🏋️ Coach Name</label>
+                            <input type="text" id="p-coach" placeholder="Enter coach name">
+                            
+                            <label>⚖️ Weight (kg)</label>
+                            <input type="number" id="p-weight" placeholder="e.g., 75" oninput="calculateBMI()">
+                            
+                            <label>📏 Height (cm)</label>
+                            <input type="number" id="p-height" placeholder="e.g., 175" oninput="calculateBMI()">
+                            
+                            <p class="auto-calc-hint">💡 BMI will auto-calculate as you enter weight and height</p>
+                            
+                            <label>🎂 Age</label>
+                            <input type="number" id="p-age" placeholder="e.g., 25">
+                            
+                            <label>⚤ Gender</label>
+                            <select id="p-gender">
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label>📈 Player Level</label>
+                            <select id="p-level" onchange="updateMethodAvailability()">
+                                <option value="Newbie (Less than 1 month)">Newbie (Less than 1 month)</option>
+                                <option value="Beginner (1 - 6 months)">Beginner (1 - 6 months)</option>
+                                <option value="Intermediate (6 months - 2 years)">Intermediate (6 months - 2 years)</option>
+                                <option value="Advanced (2 - 5 years)">Advanced (2 - 5 years)</option>
+                                <option value="Professional (5+ years)">Professional (5+ years)</option>
+                            </select>
+                            
+                            <label>🏃 Body Type</label>
+                            <select id="p-body">
+                                <option value="Ectomorph">Ectomorph</option>
+                                <option value="Mesomorph">Mesomorph</option>
+                                <option value="Endomorph">Endomorph</option>
+                            </select>
+                            
+                            <label>🎯 Training Goal</label>
+                            <select id="p-goal">
+                                <option value="Build Muscle">Build Muscle</option>
+                                <option value="Lose Fat">Lose Fat</option>
+                                <option value="Maintain Weight">Maintain Weight</option>
+                                <option value="Increase Strength">Increase Strength</option>
+                                <option value="Endurance">Endurance</option>
+                            </select>
+                            
+                            <label>📅 Training Split</label>
+                            <select id="p-split">
+                                <option value="Bro Split">Bro Split (One muscle per day)</option>
+                                <option value="Push/Pull/Legs">Push / Pull / Legs</option>
+                                <option value="Upper/Lower">Upper / Lower body</option>
+                                <option value="Full Body">Full body workouts</option>
+                            </select>
+                            
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="p-ifbb" onchange="toggleIfbbOptions()">
+                                <label for="p-ifbb">🏆 IFBB Female Program (Focus: Glutes/Shoulders)</label>
+                            </div>
+                            <p style="font-size: 12px; color: var(--text-light);">Enabling this option focuses the program on glutes and shoulders per IFBB female standards.</p>
+                            
+                            <!-- BMI Display in Form -->
+                            <div id="p-bmi-display" class="bmi-display bmi-normal hidden">
+                                <div class="bmi-category" id="p-bmi-category">Normal Weight</div>
+                                <div class="bmi-value" id="p-bmi-value">22.5</div>
+                                <div class="bmi-info" id="p-bmi-info">Healthy weight range for your height</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <label>⚕️ Medical History & Injuries</label>
+                    <textarea id="p-medical" rows="4" placeholder="Please note any previous injuries, surgeries, or chronic conditions that may affect exercise. This information is confidential and used only to design a safe program."></textarea>
+                    <p style="font-size: 12px; color: var(--text-light);">Note: All medical information is confidential and used solely for program design.</p>
+                    
+                    <label>💊 Supplements / PEDs</label>
+                    <input type="text" id="p-supplements" placeholder="List any supplements or PEDs the player is using">
+                    
+                    <div class="card" style="background: var(--bg); border: 2px solid var(--border);">
+                        <h3>🔢 Enhanced Calorie Calculator</h3>
+                        <label>🏃 Activity Level</label>
+                        <select id="p-activity">
+                            <option value="1.2">Sedentary - Little/no exercise</option>
+                            <option value="1.375">Light Active - 1-3 days/week</option>
+                            <option value="1.55">Moderate - 3-5 days/week</option>
+                            <option value="1.725">Very Active - 6-7 days/week</option>
+                            <option value="1.9">Extra Active - Physical job</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="calculateNutrition()">Calculate Calories</button>
+                        <div id="calc-result" class="status-message status-info hidden"></div>
+                    </div>
+
+                    <div style="margin-top: 24px;">
+                        <button class="btn btn-success" onclick="savePlayer()">💾 Save Player</button>
+                        <button class="btn btn-outline" onclick="clearPlayerForm()">🗑️ Clear Form</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">📋 Player List</h3>
+                    </div>
+                    <select id="player-list-select" onchange="loadPlayerFromList()">
+                        <option value="">Select a player from the list</option>
+                    </select>
+                    <button class="btn btn-danger" onclick="deleteAllPlayers()">⚠️ Delete All Players</button>
+                </div>
+            </div>
+
+            <!-- Workout Builder -->
+            <div id="workout-builder" class="section hidden">
+                <h2 class="section-title">🏋️ Advanced Program Builder</h2>
+                <div class="card">
+                    <label>📅 Select Training Day</label>
+                    <div class="day-selector">
+                        <button class="day-btn" onclick="selectDay(0)">Day 1</button>
+                        <button class="day-btn" onclick="selectDay(1)">Day 2</button>
+                        <button class="day-btn" onclick="selectDay(2)">Day 3</button>
+                        <button class="day-btn" onclick="selectDay(3)">Day 4</button>
+                        <button class="day-btn" onclick="selectDay(4)">Day 5</button>
+                        <button class="day-btn" onclick="selectDay(5)">Day 6</button>
+                        <button class="day-btn" onclick="selectDay(6)">Day 7</button>
+                    </div>
+                    <p id="selected-day-display" class="status-message status-info hidden">No day selected</p>
+                    
+                    <div class="tabs">
+                        <div class="tab active" onclick="switchWorkoutTab('large')">💪 Large Muscles</div>
+                        <div class="tab" onclick="switchWorkoutTab('small')">🦾 Small Muscles</div>
+                        <div class="tab" onclick="switchWorkoutTab('cardio')">🏃 Cardio</div>
+                    </div>
+
+                    <!-- Large Muscles Tab -->
+                    <div id="large-muscles-tab">
+                        <h3>💪 Large Muscles</h3>
+                        <div class="grid-2">
+                            <div>
+                                <label>Select Large Muscle Group</label>
+                                <select id="wb-large-muscle" onchange="updateExerciseOptions('large')">
+                                    <option value="">Select muscle group...</option>
+                                    <option value="Chest">Chest</option>
+                                    <option value="Back">Back</option>
+                                    <option value="Legs">Legs</option>
+                                    <option value="Shoulders">Shoulders</option>
+                                    <option value="Glutes (IFBB)">Glutes (IFBB)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label>Select Exercise</label>
+                                <select id="wb-large-ex">
+                                    <option value="">Select muscle group first...</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <label>🎯 Training Method</label>
+                        <select id="wb-large-method" onchange="showMethodDetails('large')">
+                            <!-- Options populated by JavaScript based on player level -->
+                        </select>
+                        
+                        <div id="large-method-warning" class="level-warning hidden"></div>
+                        
+                        <div id="large-method-details" class="method-details hidden">
+                            <h4>Method Details <span id="large-method-level" class="method-level beginner">Beginner</span></h4>
+                            <p id="large-method-text"></p>
+                        </div>
+                        
+                        <div class="sets-reps-input">
+                            <div>
+                                <div class="sets-reps-label">Sets</div>
+                                <input type="number" id="wb-large-sets" placeholder="3" min="1" max="10">
+                            </div>
+                            <div>
+                                <div class="sets-reps-label">Reps</div>
+                                <input type="text" id="wb-large-reps" placeholder="8-12" value="8-12">
+                            </div>
+                            <div>
+                                <div class="sets-reps-label">Weight (kg)</div>
+                                <input type="number" id="wb-large-weight" placeholder="0" min="0">
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 16px;">
+                            <button class="btn btn-primary" onclick="addExercise('large')">➕ Add Exercise</button>
+                            <button class="btn btn-outline" onclick="openCustomExerciseModal('large')">⚙️ Custom Exercise</button>
+                        </div>
+                        
+                        <h4 style="margin-top: 28px;">🧘 Stretching Exercises</h4>
+                        <select id="wb-stretch-group" onchange="updateStretchOptions('large')">
+                            <option value="">Select Muscle Group...</option>
+                            <option value="Chest">Chest</option>
+                            <option value="Back">Back</option>
+                            <option value="Legs">Legs</option>
+                            <option value="Shoulders">Shoulders</option>
+                            <option value="Glutes (IFBB)">Glutes (IFBB)</option>
+                        </select>
+                        <select id="wb-large-stretch-ex">
+                            <option value="">Select stretching exercise...</option>
+                        </select>
+                        <button class="btn btn-outline" onclick="addStretch('large')">Add Stretch</button>
+                        
+                        <div id="large-stretch-list" style="margin-top: 24px;"></div>
+                        <div id="large-list" style="margin-top: 24px;"></div>
+                    </div>
+
+                    <!-- Small Muscles Tab -->
+                    <div id="small-muscles-tab" class="hidden">
+                        <h3>🦾 Small Muscles</h3>
+                        <div class="grid-2">
+                            <div>
+                                <label>Select Small Muscle Group</label>
+                                <select id="wb-small-muscle" onchange="updateExerciseOptions('small')">
+                                    <option value="">Select muscle group...</option>
+                                    <option value="Biceps">Biceps</option>
+                                    <option value="Triceps">Triceps</option>
+                                    <option value="Abs">Abs</option>
+                                    <option value="Calves">Calves</option>
+                                    <option value="Glutes (IFBB)">Glutes (IFBB)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label>Select Exercise</label>
+                                <select id="wb-small-ex">
+                                    <option value="">Select muscle group first...</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <label>🎯 Training Method</label>
+                        <select id="wb-small-method" onchange="showMethodDetails('small')">
+                            <!-- Options populated by JavaScript based on player level -->
+                        </select>
+                        
+                        <div id="small-method-warning" class="level-warning hidden"></div>
+                        
+                        <div id="small-method-details" class="method-details hidden">
+                            <h4>Method Details <span id="small-method-level" class="method-level beginner">Beginner</span></h4>
+                            <p id="small-method-text"></p>
+                        </div>
+                        
+                        <div class="sets-reps-input">
+                            <div>
+                                <div class="sets-reps-label">Sets</div>
+                                <input type="number" id="wb-small-sets" placeholder="3" min="1" max="10">
+                            </div>
+                            <div>
+                                <div class="sets-reps-label">Reps</div>
+                                <input type="text" id="wb-small-reps" placeholder="8-12" value="8-12">
+                            </div>
+                            <div>
+                                <div class="sets-reps-label">Weight (kg)</div>
+                                <input type="number" id="wb-small-weight" placeholder="0" min="0">
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 16px;">
+                            <button class="btn btn-primary" onclick="addExercise('small')">➕ Add Exercise</button>
+                            <button class="btn btn-outline" onclick="openCustomExerciseModal('small')">⚙️ Custom Exercise</button>
+                        </div>
+                        
+                        <h4 style="margin-top: 28px;">🧘 Stretching Exercises</h4>
+                        <select id="wb-stretch-group-small" onchange="updateStretchOptions('small')">
+                            <option value="">Select Muscle Group...</option>
+                            <option value="Biceps">Biceps</option>
+                            <option value="Triceps">Triceps</option>
+                            <option value="Abs">Abs</option>
+                            <option value="Calves">Calves</option>
+                            <option value="Glutes (IFBB)">Glutes (IFBB)</option>
+                        </select>
+                        <select id="wb-small-stretch-ex">
+                            <option value="">Select stretching exercise...</option>
+                        </select>
+                        <button class="btn btn-outline" onclick="addStretch('small')">Add Stretch</button>
+                        
+                        <div id="small-stretch-list" style="margin-top: 24px;"></div>
+                        <div id="small-list" style="margin-top: 24px;"></div>
+                    </div>
+
+                    <!-- Cardio Tab -->
+                    <div id="cardio-tab" class="hidden">
+                        <h3>🏃 Cardio for Selected Day</h3>
+                        <label>Cardio Exercise</label>
+                        <select id="wb-cardio">
+                            <option value="">Select cardio exercise...</option>
+                            <option value="Treadmill Running">Treadmill Running</option>
+                            <option value="Stationary Bike">Stationary Bike</option>
+                            <option value="Cross-Trainer">Cross-Trainer</option>
+                            <option value="Walking">Walking</option>
+                            <option value="Jump Rope">Jump Rope</option>
+                            <option value="Swimming">Swimming</option>
+                            <option value="Rowing Machine">Rowing Machine</option>
+                            <option value="Elliptical">Elliptical</option>
+                        </select>
+                        
+                        <label>⏱️ Duration (minutes)</label>
+                        <input type="number" id="wb-cardio-duration" placeholder="e.g., 30">
+                        
+                        <button class="btn btn-primary" onclick="addCardio()">➕ Add Cardio to this day</button>
+                        <div id="cardio-list" style="margin-top: 24px;"></div>
+                    </div>
+
+                    <div style="margin-top: 36px; padding-top: 28px; border-top: 3px solid var(--border);">
+                        <button class="btn btn-success" onclick="saveWorkoutToPlayer()">💾 Save Program to Current Player</button>
+                        <button class="btn btn-danger" onclick="clearWorkout()">🗑️ Clear All Exercises</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Templates -->
+            <div id="templates" class="section hidden">
+                <h2 class="section-title">📁 Program Templates</h2>
+                <div class="card">
+                    <p id="template-status" class="status-message status-info">No templates saved yet</p>
+                    <div style="margin-top: 16px;">
+                        <button class="btn btn-primary" onclick="saveTemplate()">💾 Save Current Program as Template</button>
+                        <button class="btn btn-outline" onclick="loadTemplate()">📂 Load Template</button>
+                        <button class="btn btn-danger" onclick="deleteTemplate()">🗑️ Delete Template</button>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>Saved Templates</h3>
+                    <select id="template-list" onchange="previewTemplate()">
+                        <option value="">Select a template...</option>
+                    </select>
+                    <div id="template-preview" style="margin-top: 16px; background: var(--bg); padding: 16px; border-radius: var(--border-radius-sm); border: 2px solid var(--border);"></div>
+                </div>
+            </div>
+
+            <!-- Custom Exercises -->
+            <div id="custom-exercises" class="section hidden">
+                <h2 class="section-title">⚙️ Custom Exercise Library</h2>
+                <div class="card">
+                    <h3>➕ Add New Custom Exercise</h3>
+                    <label>Exercise Name</label>
+                    <input type="text" id="custom-ex-name" placeholder="e.g., Dumbbell Incline Press">
+                    
+                    <label>Equipment Type</label>
+                    <select id="custom-ex-equipment">
+                        <option value="Barbell">Barbell</option>
+                        <option value="Dumbbell">Dumbbell</option>
+                        <option value="Machine">Machine</option>
+                        <option value="Cable">Cable</option>
+                        <option value="Bodyweight">Bodyweight</option>
+                        <option value="Band">Resistance Band</option>
+                        <option value="Kettlebell">Kettlebell</option>
+                    </select>
+                    
+                    <label>Muscle Group</label>
+                    <select id="custom-ex-muscle">
+                        <option value="Chest">Chest</option>
+                        <option value="Back">Back</option>
+                        <option value="Legs">Legs</option>
+                        <option value="Shoulders">Shoulders</option>
+                        <option value="Biceps">Biceps</option>
+                        <option value="Triceps">Triceps</option>
+                        <option value="Abs">Abs</option>
+                        <option value="Calves">Calves</option>
+                        <option value="Glutes (IFBB)">Glutes (IFBB)</option>
+                    </select>
+                    
+                    <label>Notes (Optional)</label>
+                    <textarea id="custom-ex-notes" rows="3" placeholder="Any special instructions or form cues"></textarea>
+                    
+                    <button class="btn btn-success" onclick="saveCustomExercise()">💾 Save Custom Exercise</button>
+                </div>
+                
+                <div class="card">
+                    <h3>Your Custom Exercises</h3>
+                    <div id="custom-exercises-list"></div>
+                </div>
+            </div>
+
+            <!-- Data Management -->
+            <div id="data" class="section hidden">
+                <h2 class="section-title">💾 Data Management</h2>
+                <div class="card">
+                    <h3>Backup & Restore</h3>
+                    <p style="color: var(--text-light); margin-bottom: 16px;">Export all your data including players, programs, and settings. You can import this data on another device.</p>
+                    <button class="btn btn-primary" onclick="exportData()">📤 Export Backup (JSON)</button>
+                    <button class="btn btn-outline" onclick="document.getElementById('import-file').click()">📥 Import Backup</button>
+                    <input type="file" id="import-file" class="hidden" accept=".json" onchange="importData(this)">
+                </div>
+                
+                <div class="card">
+                    <h3>🔐 Security</h3>
+                    <button class="btn btn-warning" onclick="changePinFromSettings()">🔑 Change PIN Code</button>
+                    <button class="btn btn-danger" onclick="clearAllData()">⚠️ Clear All Data (Reset App)</button>
+                </div>
+                
+                <div class="card">
+                    <h3>ℹ️ App Information</h3>
+                    <p><strong>Version:</strong> 1.0.0</p>
+                    <p><strong>Total Players:</strong> <span id="total-players">0</span></p>
+                    <p><strong>Total Templates:</strong> <span id="total-templates">0</span></p>
+                    <p><strong>Total Custom Exercises:</strong> <span id="total-custom-ex">0</span></p>
+                    <p><strong>Last Backup:</strong> <span id="last-backup">Never</span></p>
+                    <p style="margin-top: 16px; padding-top: 16px; border-top: 2px solid var(--border);"><strong>Developer Signature:</strong> <span style="color: var(--primary); font-weight: 700;">FAAJ77.QWEN</span></p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Custom Exercise Modal -->
+    <div id="custom-exercise-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3>⚙️ Add Custom Exercise</h3>
+            <label>Exercise Name</label>
+            <input type="text" id="modal-custom-ex-name" placeholder="Enter exercise name">
+            
+            <label>Equipment</label>
+            <select id="modal-custom-ex-equipment">
+                <option value="Barbell">Barbell</option>
+                <option value="Dumbbell">Dumbbell</option>
+                <option value="Machine">Machine</option>
+                <option value="Cable">Cable</option>
+                <option value="Bodyweight">Bodyweight</option>
+                <option value="Band">Band</option>
+            </select>
+            
+            <div style="margin-top: 24px;">
+                <button class="btn btn-success" onclick="addCustomExerciseFromModal()">💾 Save</button>
+                <button class="btn btn-danger" onclick="closeCustomExerciseModal()">❌ Cancel</button>
+            </div>
+            
+            <!-- Signature in Modal -->
+            <div class="signature" style="text-align: center; margin-top: 30px;">
+                <span class="signature-highlight">FAAJ77.QWEN</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== PDF EXPORT FUNCTION (For APK/WebView) ====================
+        function exportPDF() {
+            const { jsPDF } = window.jspdf;
+            
+            // Show loading message
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '⏳ Generating...';
+            btn.disabled = true;
+            
+            // Get the dashboard content
+            const element = document.getElementById('dashboard');
+            
+            html2canvas(element, {
+                scale: 2,
+                useCORS: true,
+                backgroundColor: '#ffffff',
+                logging: false,
+                width: element.scrollWidth,
+                height: element.scrollHeight
+            }).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                
+                const imgWidth = 210;
+                const pageHeight = 297;
+                const imgHeight = canvas.height * imgWidth / canvas.width;
+                
+                let heightLeft = imgHeight;
+                let position = 0;
+                
+                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+                
+                // Add additional pages if needed
+                while (heightLeft >= 0) {
+                    position = heightLeft - imgHeight;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                }
+                
+                // Get player name for filename
+                const playerName = document.getElementById('view-name').textContent || 'Player';
+                const safeName = playerName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                
+                // Save PDF
+                pdf.save('Coach-Pro-' + safeName + '.pdf');
+                
+                // Reset button
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                
+                // Show success message
+                alert('✅ PDF Exported Successfully!\n\nFile: Coach-Pro-' + safeName + '.pdf');
+            }).catch(err => {
+                console.error('PDF Export Error:', err);
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                alert('❌ Error exporting PDF:\n' + err.message + '\n\nPlease try again.');
+            });
+        }
+
+        // ==================== THEME MANAGEMENT ====================
+        function toggleTheme() {
+            const html = document.documentElement;
+            const themeIcon = document.getElementById('theme-icon');
+            
+            if (html.getAttribute('data-theme') === 'dark') {
+                html.removeAttribute('data-theme');
+                themeIcon.textContent = '🌙';
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                themeIcon.textContent = '☀️';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        // Load saved theme
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme');
+            const themeIcon = document.getElementById('theme-icon');
+            
+            if (savedTheme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                themeIcon.textContent = '☀️';
+            }
+        });
+
+        // ==================== STATE & INITIALIZATION ====================
+        let currentPin = localStorage.getItem('coachPin') || '0000';
+        let players = JSON.parse(localStorage.getItem('coachPlayers')) || [];
+        let customExercises = JSON.parse(localStorage.getItem('coachCustomExercises')) || [];
+        let templates = JSON.parse(localStorage.getItem('coachTemplates')) || {};
+        let currentWorkout = { large: [], small: [], cardio: [], largeStretch: [], smallStretch: [] };
+        let tempNutrition = {};
+        let tempBMI = {};
+        let selectedDayIndex = -1;
+        let currentModalType = 'large';
+        let currentPlayerIndex = -1;
+
+        // COMPREHENSIVE EXERCISE DATABASE - Large Muscles
+        const exerciseDatabase = {
+            'Chest': [
+                'Barbell Bench Press', 'Incline Barbell Press', 'Decline Barbell Press', 
+                'Dumbbell Bench Press', 'Incline Dumbbell Press', 'Flat Dumbbell Fly', 
+                'Incline Dumbbell Fly', 'Cable Crossover (High)', 'Cable Crossover (Low)', 
+                'Cable Crossover (Mid)', 'Chest Fly Machine', 'Pec Deck', 
+                'Push Ups', 'Weighted Push Ups', 'Dips (Chest Focus)', 
+                'Smith Machine Bench Press', 'Hammer Strength Bench Press', 'Landmine Press', 
+                'Swiss Bar Bench Press', 'Close Grip Bench Press'
+            ],
+            'Back': [
+                'Pull Ups (Wide Grip)', 'Pull Ups (Close Grip)', 'Chin Ups', 
+                'Lat Pulldown (Wide)', 'Lat Pulldown (Close)', 'Lat Pulldown (Reverse)', 
+                'Barbell Row', 'Pendlay Row', 'T-Bar Row', 
+                'Seated Cable Row (Wide)', 'Seated Cable Row (Close)', 'Single Arm Dumbbell Row', 
+                'Single Arm Cable Row', 'Chest Supported Row', 'Deadlift', 
+                'Rack Pulls', 'Straight Arm Pulldown', 'Cable Pullover', 
+                'Face Pulls', 'Hyperextensions', 'Reverse Hyperextensions', 
+                'Good Mornings', 'Machine Row', 'Assisted Pull Up Machine'
+            ],
+            'Legs': [
+                'Barbell Back Squat', 'Barbell Front Squat', 'Goblet Squat', 
+                'Leg Press', 'Hack Squat', 'Bulgarian Split Squat', 
+                'Walking Lunge', 'Reverse Lunge', 'Static Lunge', 
+                'Leg Extension', 'Leg Curl (Lying)', 'Leg Curl (Seated)', 
+                'Leg Curl (Standing)', 'Romanian Deadlift', 'Stiff Leg Deadlift', 
+                'Sumo Deadlift', 'Calf Raise (Standing)', 'Calf Raise (Seated)', 
+                'Donkey Calf Raise', 'Sissy Squat', 'Belt Squat', 
+                'Step Ups', 'Box Squat', 'Safety Bar Squat'
+            ],
+            'Shoulders': [
+                'Overhead Press (Barbell)', 'Overhead Press (Dumbbell)', 'Seated Overhead Press', 
+                'Arnold Press', 'Push Press', 'Behind the Neck Press', 
+                'Dumbbell Lateral Raise', 'Cable Lateral Raise', 'Machine Lateral Raise', 
+                'Front Raise (Barbell)', 'Front Raise (Dumbbell)', 'Front Raise (Cable)', 
+                'Reverse Fly (Dumbbell)', 'Reverse Fly (Machine)', 'Face Pulls', 
+                'Upright Row', 'Cable Upright Row', 'Shrugs (Barbell)', 
+                'Shrugs (Dumbbell)', 'Shrugs (Cable)', 'Rack Pulls', 
+                'Landmine Press', 'Meadows Press', 'Z Press'
+            ],
+            'Glutes (IFBB)': [
+                'Barbell Hip Thrust', 'Single Leg Hip Thrust', 'Glute Bridge', 
+                'Cable Kickback', 'Cable Pull Through', 'Bulgarian Split Squat', 
+                'Sumo Squat', 'Sumo Deadlift', 'Romanian Deadlift', 
+                'Glute Abduction Machine', 'Seated Glute Abduction', 'Standing Glute Abduction', 
+                'Step Ups', 'Frog Pumps', 'Fire Hydrants', 
+                'Donkey Kicks', 'Curtsy Lunge', 'Lateral Lunge', 
+                'Cable Hip Abduction', 'Banded Glute Bridge', '45 Degree Hyperextension'
+            ]
+        };
+
+        // COMPREHENSIVE EXERCISE DATABASE - Small Muscles
+        const smallMuscleExercises = {
+            'Biceps': [
+                'Barbell Curl', 'EZ Bar Curl', 'Dumbbell Curl', 
+                'Hammer Curl', 'Preacher Curl (Barbell)', 'Preacher Curl (Dumbbell)', 
+                'Cable Curl (Straight Bar)', 'Cable Curl (Rope)', 'Incline Dumbbell Curl', 
+                'Concentration Curl', 'Spider Curl', 'Zottman Curl', 
+                '21s', 'Drag Curl', 'Reverse Curl', 
+                'Scott Curl', 'Bayesian Curl', 'Cable Hammer Curl'
+            ],
+            'Triceps': [
+                'Tricep Pushdown (Straight Bar)', 'Tricep Pushdown (Rope)', 'Tricep Pushdown (V-Bar)', 
+                'Skull Crusher', 'Close Grip Bench Press', 'Overhead Extension (Cable)', 
+                'Overhead Extension (Dumbbell)', 'Dips', 'Bench Dips', 
+                'Diamond Push Ups', 'Kickback', 'JM Press', 
+                'Tate Press', 'Rolling Tricep Extension', 'Cable Overhead Extension', 
+                'EZ Bar Overhead Extension', 'Single Arm Pushdown', 'Reverse Grip Pushdown'
+            ],
+            'Abs': [
+                'Crunch', 'Sit Up', 'Leg Raise', 
+                'Hanging Leg Raise', 'Cable Crunch', 'Ab Wheel', 
+                'Plank', 'Side Plank', 'Russian Twist', 
+                'Mountain Climbers', 'Bicycle Crunch', 'V Ups', 
+                'Toe Touch', 'Reverse Crunch', 'Dragon Flag', 
+                'Hollow Body Hold', 'Dead Bug', 'Pallof Press'
+            ],
+            'Calves': [
+                'Standing Calf Raise', 'Seated Calf Raise', 'Donkey Calf Raise', 
+                'Single Leg Calf Raise', 'Calf Press on Leg Press', 'Jump Rope', 
+                'Box Jumps', 'Farmer Walk', 'Tibialis Raise', 
+                'Seated Tibialis Raise'
+            ]
+        };
+
+        // STRETCHING EXERCISES DATABASE
+        const stretchDatabase = {
+            'Chest': ['Chest Doorway Stretch', 'Chest Wall Stretch', 'Chest Floor Stretch', 'Cable Chest Stretch', 'Prayer Stretch'],
+            'Back': ['Child Pose', 'Cat-Cow Stretch', 'Seated Forward Bend', 'Lat Stretch', 'Thread the Needle'],
+            'Legs': ['Hamstring Stretch', 'Quad Stretch', 'Hip Flexor Stretch', 'Calf Stretch', 'Butterfly Stretch', 'Pigeon Pose'],
+            'Shoulders': ['Cross-Body Shoulder Stretch', 'Overhead Tricep Stretch', 'Shoulder Roll', 'Doorway Shoulder Stretch', 'Eagle Arms'],
+            'Glutes (IFBB)': ['Pigeon Pose', 'Figure-4 Stretch', 'Seated Glute Stretch', 'Lying Glute Stretch', 'Happy Baby Pose'],
+            'Biceps': ['Wall Bicep Stretch', 'Doorway Bicep Stretch', 'Overhead Bicep Stretch', 'Prayer Stretch'],
+            'Triceps': ['Overhead Tricep Stretch', 'Behind-Back Tricep Stretch', 'Towel Tricep Stretch', 'Cross-Body Tricep Stretch'],
+            'Abs': ['Cobra Stretch', 'Standing Side Bend', 'Kneeling Ab Stretch', 'Cat-Cow Stretch'],
+            'Calves': ['Wall Calf Stretch', 'Step Calf Stretch', 'Downward Dog Calf Stretch', 'Seated Calf Stretch']
+        };
+
+        // TRAINING METHOD DETAILS WITH LEVEL REQUIREMENTS
+        const methodDetails = {
+            'Normal': {
+                text: 'Standard sets and reps. Focus on proper form and controlled movement. Ideal for learning movement patterns.',
+                level: 'newbie',
+                levelName: 'All Levels',
+                minLevel: 0
+            },
+            'Pyramid': {
+                text: 'Gradually increase weight while decreasing reps each set. Builds strength progressively through the workout.',
+                level: 'newbie',
+                levelName: 'Newbie+',
+                minLevel: 0
+            },
+            'Super Set': {
+                text: 'Perform two exercises back-to-back with no rest between them. Increases intensity and saves time.',
+                level: 'beginner',
+                levelName: 'Beginner+',
+                minLevel: 1
+            },
+            'Drop Set': {
+                text: 'After reaching failure, immediately reduce weight and continue. Extends the set beyond normal failure.',
+                level: 'intermediate',
+                levelName: 'Intermediate+',
+                minLevel: 2
+            },
+            'Rest-Pause': {
+                text: 'Hit failure, rest 15-20 seconds, then perform more reps. Extends sets beyond normal capacity.',
+                level: 'intermediate',
+                levelName: 'Intermediate+',
+                minLevel: 2
+            },
+            'Fast 7': {
+                text: '7 rapid reps with minimal rest, focus on pump and metabolic stress. Blood flow restriction style.',
+                level: 'intermediate',
+                levelName: 'Intermediate+',
+                minLevel: 2
+            },
+            'Giant Set': {
+                text: 'Perform 4 or more exercises in a row with minimal rest. Extremely high intensity for advanced trainees.',
+                level: 'advanced',
+                levelName: 'Advanced+',
+                minLevel: 3
+            },
+            'Mike Mentzer': {
+                text: 'High intensity, low volume training to complete failure. One working set to absolute failure.',
+                level: 'advanced',
+                levelName: 'Advanced+',
+                minLevel: 3
+            },
+            'Glass Rest-Pause': {
+                text: 'Extended rest-pause technique for maximum muscle fiber recruitment. Multiple mini-sets after failure.',
+                level: 'advanced',
+                levelName: 'Advanced+',
+                minLevel: 3
+            },
+            'Chain Reps': {
+                text: 'Link multiple exercises together in a specific sequence. Complex training for advanced athletes.',
+                level: 'advanced',
+                levelName: 'Advanced+',
+                minLevel: 3
+            },
+            'Glass Heavy Single': {
+                text: 'Heavy single rep followed by drop sets. Maximum strength stimulus with extended volume.',
+                level: 'professional',
+                levelName: 'Professional Only',
+                minLevel: 4
+            },
+            'Glass Failure': {
+                text: 'Train to absolute muscular failure with spotter assistance. Push beyond normal limits safely.',
+                level: 'professional',
+                levelName: 'Professional Only',
+                minLevel: 4
+            }
+        };
+
+        // Player Level Mapping
+        const playerLevelMap = {
+            'Newbie (Less than 1 month)': 0,
+            'Beginner (1 - 6 months)': 1,
+            'Intermediate (6 months - 2 years)': 2,
+            'Advanced (2 - 5 years)': 3,
+            'Professional (5+ years)': 4
+        };
+
+        // ==================== BMI CALCULATION ====================
+        function calculateBMI() {
+            var weight = parseFloat(document.getElementById('p-weight').value);
+            var height = parseFloat(document.getElementById('p-height').value);
+            var bmiDisplay = document.getElementById('p-bmi-display');
+            var bmiValue = document.getElementById('p-bmi-value');
+            var bmiCategory = document.getElementById('p-bmi-category');
+            var bmiInfo = document.getElementById('p-bmi-info');
+            
+            if (!weight || !height || weight <= 0 || height <= 0) {
+                bmiDisplay.classList.add('hidden');
+                tempBMI = {};
+                return;
+            }
+            
+            var heightInMeters = height / 100;
+            var bmi = weight / (heightInMeters * heightInMeters);
+            bmi = Math.round(bmi * 10) / 10;
+            
+            tempBMI = {
+                value: bmi,
+                category: getBMICategory(bmi),
+                info: getBMIInfo(bmi)
+            };
+            
+            bmiValue.textContent = bmi;
+            bmiCategory.textContent = tempBMI.category;
+            bmiInfo.textContent = tempBMI.info;
+            
+            bmiDisplay.className = 'bmi-display';
+            if (bmi < 18.5) {
+                bmiDisplay.classList.add('bmi-underweight');
+            } else if (bmi < 25) {
+                bmiDisplay.classList.add('bmi-normal');
+            } else if (bmi < 30) {
+                bmiDisplay.classList.add('bmi-overweight');
+            } else {
+                bmiDisplay.classList.add('bmi-obese');
+            }
+            
+            bmiDisplay.classList.remove('hidden');
+        }
+
+        function getBMICategory(bmi) {
+            if (bmi < 18.5) return 'Underweight';
+            if (bmi < 25) return 'Normal Weight';
+            if (bmi < 30) return 'Overweight';
+            return 'Obese';
+        }
+
+        function getBMIInfo(bmi) {
+            if (bmi < 18.5) return 'Consider gaining weight through healthy nutrition';
+            if (bmi < 25) return 'Healthy weight range for your height';
+            if (bmi < 30) return 'Consider fat loss through diet and exercise';
+            return 'Consult with healthcare provider for weight management';
+        }
+
+        function updateBMIDisplay(player) {
+            var bmiDisplay = document.getElementById('view-bmi-detailed');
+            var bmiValue = document.getElementById('view-bmi-value');
+            var bmiCategory = document.getElementById('view-bmi-category');
+            var bmiInfo = document.getElementById('view-bmi-info');
+            
+            if (player.bmi && player.bmi.value) {
+                bmiValue.textContent = player.bmi.value;
+                bmiCategory.textContent = player.bmi.category;
+                bmiInfo.textContent = player.bmi.info;
+                
+                bmiDisplay.className = 'bmi-display';
+                if (player.bmi.value < 18.5) {
+                    bmiDisplay.classList.add('bmi-underweight');
+                } else if (player.bmi.value < 25) {
+                    bmiDisplay.classList.add('bmi-normal');
+                } else if (player.bmi.value < 30) {
+                    bmiDisplay.classList.add('bmi-overweight');
+                } else {
+                    bmiDisplay.classList.add('bmi-obese');
+                }
+                
+                bmiDisplay.classList.remove('hidden');
+            } else {
+                bmiDisplay.classList.add('hidden');
+            }
+        }
+
+        // ==================== AUTHENTICATION ====================
+        function checkPin() {
+            const input = document.getElementById('pin-input').value;
+            const msg = document.getElementById('pin-message');
+            
+            if (input === currentPin) {
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('app-screen').classList.remove('hidden');
+                sessionStorage.setItem('isLoggedIn', 'true');
+                msg.classList.add('hidden');
+                updatePlayerList();
+                updateTemplateList();
+                updateCustomExercisesList();
+                updateAppInfo();
+            } else {
+                msg.textContent = '❌ Incorrect PIN. Please try again.';
+                msg.classList.remove('hidden');
+                document.getElementById('pin-input').value = '';
+                document.getElementById('pin-input').focus();
+            }
+        }
+
+        function lockApp() {
+            document.getElementById('app-screen').classList.add('hidden');
+            document.getElementById('login-screen').classList.remove('hidden');
+            document.getElementById('pin-input').value = '';
+            sessionStorage.removeItem('isLoggedIn');
+        }
+
+        function showResetPin() {
+            document.getElementById('reset-pin-area').classList.remove('hidden');
+        }
+
+        function hideResetPin() {
+            document.getElementById('reset-pin-area').classList.add('hidden');
+            document.getElementById('pin-error').classList.add('hidden');
+            document.getElementById('new-pin').value = '';
+            document.getElementById('confirm-pin').value = '';
+        }
+
+        function saveNewPin() {
+            const p1 = document.getElementById('new-pin').value;
+            const p2 = document.getElementById('confirm-pin').value;
+            const err = document.getElementById('pin-error');
+            
+            if (p1.length !== 4 || p2.length !== 4) {
+                err.textContent = '❌ PIN must be exactly 4 digits.';
+                err.classList.remove('hidden');
+                return;
+            }
+            
+            if (p1 !== p2) {
+                err.textContent = '❌ PINs do not match. Please try again.';
+                err.classList.remove('hidden');
+                return;
+            }
+            
+            currentPin = p1;
+            localStorage.setItem('coachPin', currentPin);
+            alert('✅ PIN Changed Successfully! Your new PIN is now active.');
+            hideResetPin();
+        }
+
+        function changePinFromSettings() {
+            showResetPin();
+            showSection('data');
+        }
+
+        // Handle Enter key on PIN input and theme load
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('pin-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    checkPin();
+                }
+            });
+            
+            if (sessionStorage.getItem('isLoggedIn') === 'true') {
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('app-screen').classList.remove('hidden');
+                updatePlayerList();
+                updateTemplateList();
+                updateCustomExercisesList();
+                updateAppInfo();
+            }
+            
+            renderWorkoutList();
+        });
+
+        // ==================== NAVIGATION ====================
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(function(el) {
+                el.classList.add('hidden');
+            });
+            document.getElementById(sectionId).classList.remove('hidden');
+            
+            if (sectionId === 'workout-builder') {
+                switchWorkoutTab('large');
+                updateMethodOptions('large');
+                updateMethodOptions('small');
+            }
+        }
+
+        // ==================== DAY SELECTION ====================
+        function selectDay(index) {
+            selectedDayIndex = index;
+            
+            document.querySelectorAll('.day-btn').forEach(function(btn, i) {
+                if (i === index) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            
+            const display = document.getElementById('selected-day-display');
+            display.textContent = '✏️ Currently Editing: Day ' + (index + 1);
+            display.classList.remove('hidden');
+        }
+
+        // ==================== WORKOUT TABS ====================
+        function switchWorkoutTab(tabName) {
+            document.querySelectorAll('.tab').forEach(function(tab) {
+                tab.classList.remove('active');
+            });
+            
+            document.getElementById('large-muscles-tab').classList.add('hidden');
+            document.getElementById('small-muscles-tab').classList.add('hidden');
+            document.getElementById('cardio-tab').classList.add('hidden');
+            
+            const tabs = document.querySelectorAll('.tab');
+            if (tabName === 'large') {
+                tabs[0].classList.add('active');
+                document.getElementById('large-muscles-tab').classList.remove('hidden');
+            } else if (tabName === 'small') {
+                tabs[1].classList.add('active');
+                document.getElementById('small-muscles-tab').classList.remove('hidden');
+            } else if (tabName === 'cardio') {
+                tabs[2].classList.add('active');
+                document.getElementById('cardio-tab').classList.remove('hidden');
+            }
+        }
+
+        // ==================== UPDATE METHOD OPTIONS BASED ON PLAYER LEVEL ====================
+        function updateMethodOptions(type) {
+            var playerLevel = document.getElementById('p-level').value;
+            var playerLevelNum = playerLevelMap[playerLevel] || 0;
+            var methodSelect = document.getElementById('wb-' + type + '-method');
+            
+            methodSelect.innerHTML = '';
+            
+            Object.keys(methodDetails).forEach(function(method) {
+                if (methodDetails[method].minLevel <= playerLevelNum) {
+                    var opt = document.createElement('option');
+                    opt.value = method;
+                    opt.textContent = method + ' (' + methodDetails[method].levelName + ')';
+                    methodSelect.appendChild(opt);
+                }
+            });
+        }
+
+        // ==================== EXERCISE OPTIONS ====================
+        function updateExerciseOptions(type) {
+            var muscleSelect = document.getElementById('wb-' + type + '-muscle');
+            var exSelect = document.getElementById('wb-' + type + '-ex');
+            var muscle = muscleSelect.value;
+            
+            exSelect.innerHTML = '<option value="">Select an exercise...</option>';
+            
+            var exercises = [];
+            if (type === 'large' && exerciseDatabase[muscle]) {
+                exercises = exerciseDatabase[muscle];
+            } else if (type === 'small' && smallMuscleExercises[muscle]) {
+                exercises = smallMuscleExercises[muscle];
+            }
+            
+            if (exercises.length > 0) {
+                exercises.forEach(function(ex) {
+                    var opt = document.createElement('option');
+                    opt.value = ex;
+                    opt.textContent = ex;
+                    exSelect.appendChild(opt);
+                });
+            }
+            
+            customExercises.forEach(function(customEx) {
+                if (customEx.muscle === muscle) {
+                    var opt = document.createElement('option');
+                    opt.value = customEx.name + ' (Custom)';
+                    opt.textContent = customEx.name + ' (Custom - ' + customEx.equipment + ')';
+                    exSelect.appendChild(opt);
+                }
+            });
+        }
+
+        // ==================== STRETCH OPTIONS ====================
+        function updateStretchOptions(type) {
+            var groupSelect = document.getElementById(type === 'large' ? 'wb-stretch-group' : 'wb-stretch-group-small');
+            var stretchSelect = document.getElementById(type === 'large' ? 'wb-large-stretch-ex' : 'wb-small-stretch-ex');
+            var group = groupSelect.value;
+            
+            stretchSelect.innerHTML = '<option value="">Select stretching exercise...</option>';
+            
+            if (group && stretchDatabase[group]) {
+                stretchDatabase[group].forEach(function(stretch) {
+                    var opt = document.createElement('option');
+                    opt.value = stretch;
+                    opt.textContent = stretch;
+                    stretchSelect.appendChild(opt);
+                });
+            }
+        }
+
+        // ==================== METHOD DETAILS & LEVEL CHECK ====================
+        function showMethodDetails(type) {
+            var methodSelect = document.getElementById('wb-' + type + '-method');
+            var detailsDiv = document.getElementById(type + '-method-details');
+            var methodText = document.getElementById(type + '-method-text');
+            var methodLevel = document.getElementById(type + '-method-level');
+            var warningDiv = document.getElementById(type + '-method-warning');
+            var method = methodSelect.value;
+            
+            if (methodDetails[method]) {
+                methodText.textContent = methodDetails[method].text;
+                methodLevel.textContent = methodDetails[method].levelName;
+                methodLevel.className = 'method-level ' + methodDetails[method].level;
+                detailsDiv.classList.remove('hidden');
+                
+                var playerLevel = document.getElementById('p-level').value;
+                var playerLevelNum = playerLevelMap[playerLevel] || 0;
+                var requiredLevel = methodDetails[method].minLevel;
+                
+                if (playerLevelNum < requiredLevel) {
+                    warningDiv.innerHTML = '<strong>⚠️ Level Warning:</strong> This method requires ' + methodDetails[method].levelName + ' level. Current player is ' + playerLevel + '. Consider using a simpler method.';
+                    warningDiv.classList.remove('hidden');
+                } else {
+                    warningDiv.classList.add('hidden');
+                }
+            } else {
+                detailsDiv.classList.add('hidden');
+            }
+        }
+
+        function updateMethodAvailability() {
+            updateMethodOptions('large');
+            updateMethodOptions('small');
+            updateMethodDetails('large');
+            updateMethodDetails('small');
+        }
+
+        // ==================== ADD EXERCISES ====================
+        function addExercise(type) {
+            var muscleSelect = document.getElementById('wb-' + type + '-muscle');
+            var exSelect = document.getElementById('wb-' + type + '-ex');
+            var methodSelect = document.getElementById('wb-' + type + '-method');
+            var setsInput = document.getElementById('wb-' + type + '-sets');
+            var repsInput = document.getElementById('wb-' + type + '-reps');
+            var weightInput = document.getElementById('wb-' + type + '-weight');
+            
+            if (!muscleSelect.value) {
+                alert('⚠️ Please select a muscle group first.');
+                return;
+            }
+            
+            if (!exSelect.value) {
+                alert('⚠️ Please select an exercise.');
+                return;
+            }
+            
+            var item = {
+                muscle: muscleSelect.value,
+                ex: exSelect.value,
+                method: methodSelect.value,
+                day: selectedDayIndex,
+                sets: setsInput.value || '3',
+                reps: repsInput.value || '8-12',
+                weight: weightInput.value || '0'
+            };
+            
+            currentWorkout[type].push(item);
+            renderWorkoutList();
+            
+            exSelect.value = '';
+            setsInput.value = '';
+            repsInput.value = '8-12';
+            weightInput.value = '';
+        }
+
+        function addStretch(type) {
+            var groupSelect = document.getElementById(type === 'large' ? 'wb-stretch-group' : 'wb-stretch-group-small');
+            var stretchSelect = document.getElementById(type === 'large' ? 'wb-large-stretch-ex' : 'wb-small-stretch-ex');
+            
+            if (!groupSelect.value) {
+                alert('⚠️ Please select a muscle group.');
+                return;
+            }
+            
+            if (!stretchSelect.value) {
+                alert('⚠️ Please select a stretching exercise.');
+                return;
+            }
+            
+            var item = {
+                muscle: groupSelect.value,
+                ex: stretchSelect.value,
+                method: 'Stretch',
+                day: selectedDayIndex
+            };
+            
+            if (type === 'large') {
+                currentWorkout.largeStretch.push(item);
+            } else {
+                currentWorkout.smallStretch.push(item);
+            }
+            
+            renderWorkoutList();
+            stretchSelect.value = '';
+        }
+
+        function addCardio() {
+            var exSelect = document.getElementById('wb-cardio');
+            var durInput = document.getElementById('wb-cardio-duration');
+            
+            if (!exSelect.value) {
+                alert('⚠️ Please select a cardio exercise.');
+                return;
+            }
+            
+            if (!durInput.value || durInput.value <= 0) {
+                alert('⚠️ Please enter a valid duration.');
+                return;
+            }
+            
+            currentWorkout.cardio.push({
+                ex: exSelect.value,
+                dur: durInput.value,
+                day: selectedDayIndex
+            });
+            
+            renderWorkoutList();
+            durInput.value = '';
+        }
+
+        // ==================== RENDER WORKOUT LIST ====================
+        function renderWorkoutList() {
+            var largeList = document.getElementById('large-list');
+            var largeStretchList = document.getElementById('large-stretch-list');
+            var smallList = document.getElementById('small-list');
+            var smallStretchList = document.getElementById('small-stretch-list');
+            var cardioList = document.getElementById('cardio-list');
+            
+            if (currentWorkout.large.length === 0) {
+                largeList.innerHTML = '<div class="empty-state"><div class="empty-state-icon">💪</div><p class="empty-state-text">No exercises added for large muscles yet.</p></div>';
+            } else {
+                largeList.innerHTML = '';
+                currentWorkout.large.forEach(function(item, idx) {
+                    var dayLabel = item.day >= 0 ? 'Day ' + (item.day + 1) : 'All Days';
+                    var methodClass = '';
+                    if (methodDetails[item.method]) {
+                        if (methodDetails[item.method].level === 'advanced') {
+                            methodClass = ' advanced';
+                        } else if (methodDetails[item.method].level === 'expert' || methodDetails[item.method].level === 'professional') {
+                            methodClass = ' expert';
+                        }
+                    }
+                    largeList.innerHTML += 
+                        '<div class="exercise-card large-muscle">' +
+                        '<div class="exercise-info">' +
+                        '<div class="exercise-header">' +
+                        '<span class="exercise-muscle">' + item.muscle + '</span>' +
+                        '<span class="exercise-day">' + dayLabel + '</span>' +
+                        '<span class="exercise-sets-reps">' + item.sets + ' sets × ' + item.reps + ' reps</span>' +
+                        '</div>' +
+                        '<div class="exercise-name">' + item.ex + '</div>' +
+                        '<span class="exercise-method' + methodClass + '">' + item.method + '</span>' +
+                        '</div>' +
+                        '<button class="delete-btn" onclick="removeExercise(\'large\', ' + idx + ')" title="Remove">×</button>' +
+                        '</div>';
+                });
+            }
+            
+            if (currentWorkout.largeStretch.length === 0) {
+                largeStretchList.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🧘</div><p class="empty-state-text">No stretching exercises added for large muscles yet.</p></div>';
+            } else {
+                largeStretchList.innerHTML = '';
+                currentWorkout.largeStretch.forEach(function(item, idx) {
+                    var dayLabel = item.day >= 0 ? 'Day ' + (item.day + 1) : 'All Days';
+                    largeStretchList.innerHTML += 
+                        '<div class="exercise-card stretch">' +
+                        '<div class="exercise-info">' +
+                        '<div class="exercise-header">' +
+                        '<span class="exercise-muscle">' + item.muscle + '</span>' +
+                        '<span class="exercise-day">' + dayLabel + '</span>' +
+                        '</div>' +
+                        '<div class="exercise-name">' + item.ex + '</div>' +
+                        '<span class="exercise-method">🧘 Stretch</span>' +
+                        '</div>' +
+                        '<button class="delete-btn" onclick="removeStretch(\'large\', ' + idx + ')" title="Remove">×</button>' +
+                        '</div>';
+                });
+            }
+            
+            if (currentWorkout.small.length === 0) {
+                smallList.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🦾</div><p class="empty-state-text">No exercises added for small muscles yet.</p></div>';
+            } else {
+                smallList.innerHTML = '';
+                currentWorkout.small.forEach(function(item, idx) {
+                    var dayLabel = item.day >= 0 ? 'Day ' + (item.day + 1) : 'All Days';
+                    var methodClass = '';
+                    if (methodDetails[item.method]) {
+                        if (methodDetails[item.method].level === 'advanced') {
+                            methodClass = ' advanced';
+                        } else if (methodDetails[item.method].level === 'expert' || methodDetails[item.method].level === 'professional') {
+                            methodClass = ' expert';
+                        }
+                    }
+                    smallList.innerHTML += 
+                        '<div class="exercise-card small-muscle">' +
+                        '<div class="exercise-info">' +
+                        '<div class="exercise-header">' +
+                        '<span class="exercise-muscle">' + item.muscle + '</span>' +
+                        '<span class="exercise-day">' + dayLabel + '</span>' +
+                        '<span class="exercise-sets-reps">' + item.sets + ' sets × ' + item.reps + ' reps</span>' +
+                        '</div>' +
+                        '<div class="exercise-name">' + item.ex + '</div>' +
+                        '<span class="exercise-method' + methodClass + '">' + item.method + '</span>' +
+                        '</div>' +
+                        '<button class="delete-btn" onclick="removeExercise(\'small\', ' + idx + ')" title="Remove">×</button>' +
+                        '</div>';
+                });
+            }
+            
+            if (currentWorkout.smallStretch.length === 0) {
+                smallStretchList.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🧘</div><p class="empty-state-text">No stretching exercises added for small muscles yet.</p></div>';
+            } else {
+                smallStretchList.innerHTML = '';
+                currentWorkout.smallStretch.forEach(function(item, idx) {
+                    var dayLabel = item.day >= 0 ? 'Day ' + (item.day + 1) : 'All Days';
+                    smallStretchList.innerHTML += 
+                        '<div class="exercise-card stretch">' +
+                        '<div class="exercise-info">' +
+                        '<div class="exercise-header">' +
+                        '<span class="exercise-muscle">' + item.muscle + '</span>' +
+                        '<span class="exercise-day">' + dayLabel + '</span>' +
+                        '</div>' +
+                        '<div class="exercise-name">' + item.ex + '</div>' +
+                        '<span class="exercise-method">🧘 Stretch</span>' +
+                        '</div>' +
+                        '<button class="delete-btn" onclick="removeStretch(\'small\', ' + idx + ')" title="Remove">×</button>' +
+                        '</div>';
+                });
+            }
+            
+            if (currentWorkout.cardio.length === 0) {
+                cardioList.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🏃</div><p class="empty-state-text">No cardio added yet.</p></div>';
+            } else {
+                cardioList.innerHTML = '';
+                currentWorkout.cardio.forEach(function(item, idx) {
+                    var dayLabel = item.day >= 0 ? 'Day ' + (item.day + 1) : 'All Days';
+                    cardioList.innerHTML += 
+                        '<div class="exercise-card cardio">' +
+                        '<div class="exercise-info">' +
+                        '<div class="exercise-header">' +
+                        '<span class="exercise-muscle">Cardio</span>' +
+                        '<span class="exercise-day">' + dayLabel + '</span>' +
+                        '</div>' +
+                        '<div class="exercise-name">' + item.ex + '</div>' +
+                        '<span class="exercise-method">' + item.dur + ' minutes</span>' +
+                        '</div>' +
+                        '<button class="delete-btn" onclick="removeExercise(\'cardio\', ' + idx + ')" title="Remove">×</button>' +
+                        '</div>';
+                });
+            }
+        }
+
+        function removeExercise(type, index) {
+            if (confirm('Remove this exercise?')) {
+                currentWorkout[type].splice(index, 1);
+                renderWorkoutList();
+            }
+        }
+
+        function removeStretch(type, index) {
+            if (confirm('Remove this stretch?')) {
+                if (type === 'large') {
+                    currentWorkout.largeStretch.splice(index, 1);
+                } else {
+                    currentWorkout.smallStretch.splice(index, 1);
+                }
+                renderWorkoutList();
+            }
+        }
+
+        function clearWorkout() {
+            if (confirm('⚠️ Are you sure you want to clear all exercises? This cannot be undone.')) {
+                currentWorkout = { large: [], small: [], cardio: [], largeStretch: [], smallStretch: [] };
+                renderWorkoutList();
+            }
+        }
+
+        // ==================== CUSTOM EXERCISE MODAL ====================
+        function openCustomExerciseModal(type) {
+            currentModalType = type;
+            document.getElementById('custom-exercise-modal').classList.remove('hidden');
+            document.getElementById('modal-custom-ex-name').value = '';
+            document.getElementById('modal-custom-ex-equipment').value = 'Barbell';
+        }
+
+        function closeCustomExerciseModal() {
+            document.getElementById('custom-exercise-modal').classList.add('hidden');
+        }
+
+        function addCustomExerciseFromModal() {
+            var name = document.getElementById('modal-custom-ex-name').value;
+            var equipment = document.getElementById('modal-custom-ex-equipment').value;
+            
+            if (!name) {
+                alert('⚠️ Please enter an exercise name.');
+                return;
+            }
+            
+            var muscleSelect = document.getElementById('wb-' + currentModalType + '-muscle');
+            var methodSelect = document.getElementById('wb-' + currentModalType + '-method');
+            var setsInput = document.getElementById('wb-' + currentModalType + '-sets');
+            var repsInput = document.getElementById('wb-' + currentModalType + '-reps');
+            var weightInput = document.getElementById('wb-' + currentModalType + '-weight');
+            
+            var item = {
+                muscle: muscleSelect.value || 'Custom',
+                ex: name + ' (' + equipment + ')',
+                method: methodSelect.value,
+                day: selectedDayIndex,
+                sets: setsInput.value || '3',
+                reps: repsInput.value || '8-12',
+                weight: weightInput.value || '0'
+            };
+            
+            currentWorkout[currentModalType].push(item);
+            renderWorkoutList();
+            closeCustomExerciseModal();
+        }
+
+        // ==================== SAVE CUSTOM EXERCISE ====================
+        function saveCustomExercise() {
+            var name = document.getElementById('custom-ex-name').value;
+            var equipment = document.getElementById('custom-ex-equipment').value;
+            var muscle = document.getElementById('custom-ex-muscle').value;
+            var notes = document.getElementById('custom-ex-notes').value;
+            
+            if (!name) {
+                alert('⚠️ Please enter an exercise name.');
+                return;
+            }
+            
+            customExercises.push({
+                name: name,
+                equipment: equipment,
+                muscle: muscle,
+                notes: notes,
+                id: Date.now()
+            });
+            
+            localStorage.setItem('coachCustomExercises', JSON.stringify(customExercises));
+            alert('✅ Custom exercise saved successfully!');
+            
+            document.getElementById('custom-ex-name').value = '';
+            document.getElementById('custom-ex-notes').value = '';
+            
+            updateCustomExercisesList();
+        }
+
+        function updateCustomExercisesList() {
+            var list = document.getElementById('custom-exercises-list');
+            
+            if (customExercises.length === 0) {
+                list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚙️</div><p class="empty-state-text">No custom exercises saved yet.</p></div>';
+                return;
+            }
+            
+            list.innerHTML = '';
+            customExercises.forEach(function(ex, idx) {
+                list.innerHTML += 
+                    '<div class="exercise-card">' +
+                    '<div class="exercise-info">' +
+                    '<div class="exercise-header">' +
+                    '<span class="exercise-muscle">' + ex.muscle + '</span>' +
+                    '<span class="exercise-day">' + ex.equipment + '</span>' +
+                    '</div>' +
+                    '<div class="exercise-name">' + ex.name + '</div>' +
+                    (ex.notes ? '<p style="font-size: 13px; color: var(--text-light); margin-top: 8px;">📝 ' + ex.notes + '</p>' : '') +
+                    '</div>' +
+                    '<button class="delete-btn" onclick="deleteCustomExercise(' + idx + ')" title="Remove">×</button>' +
+                    '</div>';
+            });
+        }
+
+        function deleteCustomExercise(index) {
+            if (confirm('Delete this custom exercise?')) {
+                customExercises.splice(index, 1);
+                localStorage.setItem('coachCustomExercises', JSON.stringify(customExercises));
+                updateCustomExercisesList();
+                updateAppInfo();
+            }
+        }
+
+        // ==================== PLAYER MANAGEMENT ====================
+        function toggleIfbbOptions() {
+            var isIfbb = document.getElementById('p-ifbb').checked;
+            if (isIfbb) {
+                alert('✅ IFBB Female Program Enabled: This will focus the program on glutes and shoulders per IFBB female competition standards.');
+            }
+        }
+
+        function calculateNutrition() {
+            var weight = parseFloat(document.getElementById('p-weight').value);
+            var activity = parseFloat(document.getElementById('p-activity').value);
+            var goal = document.getElementById('p-goal').value;
+            var gender = document.getElementById('p-gender').value;
+            var age = parseFloat(document.getElementById('p-age').value) || 30;
+            var height = parseFloat(document.getElementById('p-height').value) || 170;
+            
+            if (!weight || weight <= 0) {
+                alert('⚠️ Please enter a valid weight.');
+                return;
+            }
+            
+            var bmr;
+            if (gender === 'Male') {
+                bmr = (10 * weight) + (6.25 * height) - (5 * age) + 5;
+            } else {
+                bmr = (10 * weight) + (6.25 * height) - (5 * age) - 161;
+            }
+            
+            var calories = Math.round(bmr * activity);
+            
+            if (goal === 'Lose Fat') {
+                calories = Math.round(calories * 0.85);
+            } else if (goal === 'Build Muscle' || goal === 'Increase Strength') {
+                calories = Math.round(calories * 1.15);
+            }
+            
+            var protein = Math.round(weight * 2.2);
+            var fats = Math.round(weight * 0.4);
+            var carbs = Math.round((calories - (protein * 4) - (fats * 9)) / 4);
+            
+            tempNutrition = {
+                calories: calories,
+                protein: protein,
+                fats: fats,
+                carbs: carbs
+            };
+            
+            var result = document.getElementById('calc-result');
+            result.textContent = '🎯 Daily Target: ' + calories + ' calories | Protein: ' + protein + 'g | Carbs: ' + carbs + 'g | Fats: ' + fats + 'g';
+            result.classList.remove('hidden');
+        }
+
+        function savePlayer() {
+            var player = {
+                id: Date.now(),
+                name: document.getElementById('p-name').value,
+                coach: document.getElementById('p-coach').value,
+                weight: document.getElementById('p-weight').value,
+                height: document.getElementById('p-height').value,
+                age: document.getElementById('p-age').value,
+                gender: document.getElementById('p-gender').value,
+                level: document.getElementById('p-level').value,
+                body: document.getElementById('p-body').value,
+                goal: document.getElementById('p-goal').value,
+                split: document.getElementById('p-split').value,
+                ifbb: document.getElementById('p-ifbb').checked,
+                medical: document.getElementById('p-medical').value,
+                supplements: document.getElementById('p-supplements').value,
+                nutrition: tempNutrition,
+                bmi: tempBMI,
+                workout: JSON.parse(JSON.stringify(currentWorkout)),
+                createdAt: new Date().toISOString()
+            };
+            
+            if (!player.name) {
+                alert('⚠️ Player Name is required.');
+                return;
+            }
+            
+            if (currentPlayerIndex >= 0 && currentPlayerIndex < players.length) {
+                player.id = players[currentPlayerIndex].id;
+                player.createdAt = players[currentPlayerIndex].createdAt;
+                players[currentPlayerIndex] = player;
+                alert('✅ Player updated successfully!');
+            } else {
+                players.push(player);
+                alert('✅ Player saved successfully!');
+            }
+            
+            localStorage.setItem('coachPlayers', JSON.stringify(players));
+            updatePlayerList();
+            updateAppInfo();
+            clearPlayerForm();
+            loadPlayerView(player);
+        }
+
+        function updatePlayerList() {
+            var select = document.getElementById('player-list-select');
+            select.innerHTML = '<option value="">Select a player from the list</option>';
+            
+            players.forEach(function(p, index) {
+                var opt = document.createElement('option');
+                opt.value = index;
+                opt.textContent = p.name + ' (' + p.goal + ')';
+                select.appendChild(opt);
+            });
+        }
+
+        function loadPlayerFromList() {
+            var index = document.getElementById('player-list-select').value;
+            if (index === '') {
+                clearPlayerForm();
+                return;
+            }
+            
+            var player = players[index];
+            currentPlayerIndex = parseInt(index);
+            
+            document.getElementById('p-name').value = player.name || '';
+            document.getElementById('p-coach').value = player.coach || '';
+            document.getElementById('p-weight').value = player.weight || '';
+            document.getElementById('p-height').value = player.height || '';
+            document.getElementById('p-age').value = player.age || '';
+            document.getElementById('p-gender').value = player.gender || 'Male';
+            document.getElementById('p-level').value = player.level || 'Beginner (1 - 6 months)';
+            document.getElementById('p-body').value = player.body || 'Mesomorph';
+            document.getElementById('p-goal').value = player.goal || 'Build Muscle';
+            document.getElementById('p-split').value = player.split || 'Bro Split';
+            document.getElementById('p-ifbb').checked = player.ifbb || false;
+            document.getElementById('p-medical').value = player.medical || '';
+            document.getElementById('p-supplements').value = player.supplements || '';
+            
+            if (player.nutrition) {
+                tempNutrition = player.nutrition;
+                var result = document.getElementById('calc-result');
+                result.textContent = '🎯 Daily Target: ' + player.nutrition.calories + ' calories | Protein: ' + player.nutrition.protein + 'g | Carbs: ' + player.nutrition.carbs + 'g | Fats: ' + player.nutrition.fats + 'g';
+                result.classList.remove('hidden');
+            }
+            
+            if (player.bmi) {
+                tempBMI = player.bmi;
+                var bmiDisplay = document.getElementById('p-bmi-display');
+                var bmiValue = document.getElementById('p-bmi-value');
+                var bmiCategory = document.getElementById('p-bmi-category');
+                var bmiInfo = document.getElementById('p-bmi-info');
+                
+                bmiValue.textContent = player.bmi.value;
+                bmiCategory.textContent = player.bmi.category;
+                bmiInfo.textContent = player.bmi.info;
+                
+                bmiDisplay.className = 'bmi-display';
+                if (player.bmi.value < 18.5) {
+                    bmiDisplay.classList.add('bmi-underweight');
+                } else if (player.bmi.value < 25) {
+                    bmiDisplay.classList.add('bmi-normal');
+                } else if (player.bmi.value < 30) {
+                    bmiDisplay.classList.add('bmi-overweight');
+                } else {
+                    bmiDisplay.classList.add('bmi-obese');
+                }
+                
+                bmiDisplay.classList.remove('hidden');
+            }
+            
+            if (player.workout) {
+                currentWorkout = JSON.parse(JSON.stringify(player.workout));
+                renderWorkoutList();
+            }
+            
+            updateMethodAvailability();
+            loadPlayerView(player);
+            showSection('dashboard');
+        }
+
+        function loadPlayerView(p) {
+            document.getElementById('view-name').textContent = p.name || '-';
+            document.getElementById('view-coach').textContent = p.coach || '-';
+            document.getElementById('view-weight').textContent = (p.weight || '-') + ' kg';
+            document.getElementById('view-height').textContent = (p.height || '-') + ' cm';
+            document.getElementById('view-age').textContent = p.age || '-';
+            document.getElementById('view-gender').textContent = p.gender || '-';
+            document.getElementById('view-body').textContent = p.body || '-';
+            document.getElementById('view-goal').textContent = p.goal || '-';
+            document.getElementById('view-level').textContent = p.level || '-';
+            document.getElementById('view-split').textContent = p.split || '-';
+            document.getElementById('view-ifbb').textContent = p.ifbb ? '✅ Yes' : '❌ No';
+            document.getElementById('view-medical').textContent = p.medical || 'No medical history recorded.';
+            document.getElementById('view-supplements').textContent = p.supplements || '-';
+            document.getElementById('view-peds').textContent = p.supplements || '-';
+            
+            var printCoachName = document.getElementById('print-coach-name');
+            if (p.coach) {
+                printCoachName.textContent = 'Prepared by: ' + p.coach;
+                printCoachName.style.display = 'block';
+            } else {
+                printCoachName.style.display = 'none';
+            }
+            
+            var levelBadge = document.getElementById('view-level-badge');
+            var levelClass = 'level-beginner';
+            if (p.level && p.level.includes('Newbie')) levelClass = 'level-newbie';
+            else if (p.level && p.level.includes('Intermediate')) levelClass = 'level-intermediate';
+            else if (p.level && p.level.includes('Advanced')) levelClass = 'level-advanced';
+            else if (p.level && p.level.includes('Professional')) levelClass = 'level-professional';
+            levelBadge.className = 'level-badge ' + levelClass;
+            levelBadge.textContent = p.level || 'Beginner';
+            
+            if (p.nutrition && p.nutrition.calories) {
+                document.getElementById('view-calories').textContent = p.nutrition.calories;
+                document.getElementById('view-protein').textContent = p.nutrition.protein + 'g';
+                document.getElementById('view-carbs').textContent = p.nutrition.carbs + 'g';
+                document.getElementById('view-fats').textContent = p.nutrition.fats + 'g';
+            }
+            
+            if (p.bmi && p.bmi.value) {
+                document.getElementById('view-bmi').textContent = p.bmi.value;
+                updateBMIDisplay(p);
+            } else {
+                document.getElementById('view-bmi').textContent = '-';
+                document.getElementById('view-bmi-detailed').classList.add('hidden');
+            }
+            
+            var wHtml = '';
+            if (p.workout) {
+                if (p.workout.large && p.workout.large.length > 0) {
+                    wHtml += '<h4 style="color: var(--primary); margin-top: 20px;">💪 Large Muscles</h4>';
+                    p.workout.large.forEach(function(e) {
+                        var dayLabel = e.day >= 0 ? 'Day ' + (e.day + 1) : '';
+                        wHtml += '<div class="exercise-card large-muscle">' +
+                            '<div class="exercise-info">' +
+                            '<div class="exercise-header">' +
+                            '<span class="exercise-muscle">' + e.muscle + '</span>' +
+                            (dayLabel ? '<span class="exercise-day">' + dayLabel + '</span>' : '') +
+                            '<span class="exercise-sets-reps">' + e.sets + ' sets × ' + e.reps + ' reps</span>' +
+                            '</div>' +
+                            '<div class="exercise-name">' + e.ex + '</div>' +
+                            '<span class="exercise-method">' + e.method + '</span>' +
+                            '</div>' +
+                            '</div>';
+                    });
+                }
+                
+                if (p.workout.largeStretch && p.workout.largeStretch.length > 0) {
+                    wHtml += '<h4 style="color: var(--info); margin-top: 20px;">🧘 Large Muscle Stretching</h4>';
+                    p.workout.largeStretch.forEach(function(e) {
+                        var dayLabel = e.day >= 0 ? 'Day ' + (e.day + 1) : '';
+                        wHtml += '<div class="exercise-card stretch">' +
+                            '<div class="exercise-info">' +
+                            '<div class="exercise-header">' +
+                            '<span class="exercise-muscle">' + e.muscle + '</span>' +
+                            (dayLabel ? '<span class="exercise-day">' + dayLabel + '</span>' : '') +
+                            '</div>' +
+                            '<div class="exercise-name">' + e.ex + '</div>' +
+                            '<span class="exercise-method">🧘 Stretch</span>' +
+                            '</div>' +
+                            '</div>';
+                    });
+                }
+                
+                if (p.workout.small && p.workout.small.length > 0) {
+                    wHtml += '<h4 style="color: var(--success); margin-top: 20px;">🦾 Small Muscles</h4>';
+                    p.workout.small.forEach(function(e) {
+                        var dayLabel = e.day >= 0 ? 'Day ' + (e.day + 1) : '';
+                        wHtml += '<div class="exercise-card small-muscle">' +
+                            '<div class="exercise-info">' +
+                            '<div class="exercise-header">' +
+                            '<span class="exercise-muscle">' + e.muscle + '</span>' +
+                            (dayLabel ? '<span class="exercise-day">' + dayLabel + '</span>' : '') +
+                            '<span class="exercise-sets-reps">' + e.sets + ' sets × ' + e.reps + ' reps</span>' +
+                            '</div>' +
+                            '<div class="exercise-name">' + e.ex + '</div>' +
+                            '<span class="exercise-method">' + e.method + '</span>' +
+                            '</div>' +
+                            '</div>';
+                    });
+                }
+                
+                if (p.workout.smallStretch && p.workout.smallStretch.length > 0) {
+                    wHtml += '<h4 style="color: var(--info); margin-top: 20px;">🧘 Small Muscle Stretching</h4>';
+                    p.workout.smallStretch.forEach(function(e) {
+                        var dayLabel = e.day >= 0 ? 'Day ' + (e.day + 1) : '';
+                        wHtml += '<div class="exercise-card stretch">' +
+                            '<div class="exercise-info">' +
+                            '<div class="exercise-header">' +
+                            '<span class="exercise-muscle">' + e.muscle + '</span>' +
+                            (dayLabel ? '<span class="exercise-day">' + dayLabel + '</span>' : '') +
+                            '</div>' +
+                            '<div class="exercise-name">' + e.ex + '</div>' +
+                            '<span class="exercise-method">🧘 Stretch</span>' +
+                            '</div>' +
+                            '</div>';
+                    });
+                }
+                
+                if (p.workout.cardio && p.workout.cardio.length > 0) {
+                    wHtml += '<h4 style="color: var(--warning); margin-top: 20px;">🏃 Cardio</h4>';
+                    p.workout.cardio.forEach(function(c) {
+                        var dayLabel = c.day >= 0 ? 'Day ' + (c.day + 1) : '';
+                        wHtml += '<div class="exercise-card cardio">' +
+                            '<div class="exercise-info">' +
+                            '<div class="exercise-header">' +
+                            '<span class="exercise-muscle">Cardio</span>' +
+                            (dayLabel ? '<span class="exercise-day">' + dayLabel + '</span>' : '') +
+                            '</div>' +
+                            '<div class="exercise-name">' + c.ex + '</div>' +
+                            '<span class="exercise-method">' + c.dur + ' minutes</span>' +
+                            '</div>' +
+                            '</div>';
+                    });
+                }
+            }
+            
+            document.getElementById('workout-display').innerHTML = wHtml || '<div class="empty-state"><div class="empty-state-icon">📋</div><p class="empty-state-text">No program assigned yet.</p></div>';
+        }
+
+        function clearPlayerForm() {
+            document.querySelectorAll('#players input, #players select, #players textarea').forEach(function(i) {
+                i.value = '';
+            });
+            document.getElementById('calc-result').classList.add('hidden');
+            document.getElementById('calc-result').textContent = '';
+            document.getElementById('p-bmi-display').classList.add('hidden');
+            tempNutrition = {};
+            tempBMI = {};
+            currentPlayerIndex = -1;
+        }
+
+        function deleteAllPlayers() {
+            if (confirm('⚠️ WARNING: This will delete ALL players and their data. This cannot be undone. Are you sure?')) {
+                players = [];
+                localStorage.setItem('coachPlayers', JSON.stringify(players));
+                updatePlayerList();
+                updateAppInfo();
+                clearPlayerForm();
+                alert('✅ All players deleted.');
+            }
+        }
+
+        function saveWorkoutToPlayer() {
+            if (currentPlayerIndex >= 0 && players[currentPlayerIndex]) {
+                players[currentPlayerIndex].workout = JSON.parse(JSON.stringify(currentWorkout));
+                localStorage.setItem('coachPlayers', JSON.stringify(players));
+                alert('✅ Program saved to ' + players[currentPlayerIndex].name + ' successfully!');
+                loadPlayerView(players[currentPlayerIndex]);
+            } else {
+                alert('⚠️ Please select or create a player first, then save the program.');
+                showSection('players');
+            }
+        }
+
+        // ==================== TEMPLATES ====================
+        function saveTemplate() {
+            var templateName = prompt('Enter a name for this template:');
+            if (!templateName) return;
+            
+            templates[templateName] = JSON.parse(JSON.stringify(currentWorkout));
+            localStorage.setItem('coachTemplates', JSON.stringify(templates));
+            
+            document.getElementById('template-status').textContent = '✅ Template "' + templateName + '" saved successfully!';
+            document.getElementById('template-status').classList.remove('status-info');
+            document.getElementById('template-status').classList.add('status-success');
+            
+            updateTemplateList();
+            updateAppInfo();
+        }
+
+        function loadTemplate() {
+            var templateName = document.getElementById('template-list').value;
+            if (!templateName) {
+                alert('⚠️ Please select a template first.');
+                return;
+            }
+            
+            if (templates[templateName]) {
+                currentWorkout = JSON.parse(JSON.stringify(templates[templateName]));
+                renderWorkoutList();
+                alert('✅ Template "' + templateName + '" loaded successfully!');
+            }
+        }
+
+        function deleteTemplate() {
+            var templateName = document.getElementById('template-list').value;
+            if (!templateName) {
+                alert('⚠️ Please select a template to delete.');
+                return;
+            }
+            
+            if (confirm('Delete template "' + templateName + '"?')) {
+                delete templates[templateName];
+                localStorage.setItem('coachTemplates', JSON.stringify(templates));
+                updateTemplateList();
+                updateAppInfo();
+                alert('✅ Template deleted.');
+            }
+        }
+
+        function updateTemplateList() {
+            var select = document.getElementById('template-list');
+            select.innerHTML = '<option value="">Select a template...</option>';
+            
+            Object.keys(templates).forEach(function(name) {
+                var opt = document.createElement('option');
+                opt.value = name;
+                opt.textContent = name;
+                select.appendChild(opt);
+            });
+        }
+
+        function previewTemplate() {
+            var templateName = document.getElementById('template-list').value;
+            var preview = document.getElementById('template-preview');
+            
+            if (!templateName || !templates[templateName]) {
+                preview.innerHTML = '';
+                return;
+            }
+            
+            var t = templates[templateName];
+            var html = '<strong>💪 Large Muscles:</strong> ' + (t.large ? t.large.length : 0) + ' exercises<br>';
+            html += '<strong>🧘 Large Stretch:</strong> ' + (t.largeStretch ? t.largeStretch.length : 0) + ' exercises<br>';
+            html += '<strong>🦾 Small Muscles:</strong> ' + (t.small ? t.small.length : 0) + ' exercises<br>';
+            html += '<strong>🧘 Small Stretch:</strong> ' + (t.smallStretch ? t.smallStretch.length : 0) + ' exercises<br>';
+            html += '<strong>🏃 Cardio:</strong> ' + (t.cardio ? t.cardio.length : 0) + ' exercises';
+            
+            preview.innerHTML = html;
+        }
+
+        // ==================== DATA MANAGEMENT ====================
+        function exportData() {
+            var data = {
+                players: players,
+                customExercises: customExercises,
+                templates: templates,
+                pin: currentPin,
+                exportDate: new Date().toISOString()
+            };
+            
+            var blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = 'coach_pro_backup_' + new Date().toISOString().split('T')[0] + '.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            localStorage.setItem('coachLastBackup', new Date().toISOString());
+            updateAppInfo();
+            
+            alert('✅ Backup exported successfully!');
+        }
+
+        function importData(input) {
+            var file = input.files[0];
+            if (!file) return;
+            
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    var data = JSON.parse(e.target.result);
+                    
+                    if (data.players) {
+                        players = data.players;
+                        localStorage.setItem('coachPlayers', JSON.stringify(players));
+                    }
+                    
+                    if (data.customExercises) {
+                        customExercises = data.customExercises;
+                        localStorage.setItem('coachCustomExercises', JSON.stringify(customExercises));
+                    }
+                    
+                    if (data.templates) {
+                        templates = data.templates;
+                        localStorage.setItem('coachTemplates', JSON.stringify(templates));
+                    }
+                    
+                    if (data.pin) {
+                        currentPin = data.pin;
+                        localStorage.setItem('coachPin', currentPin);
+                    }
+                    
+                    updatePlayerList();
+                    updateTemplateList();
+                    updateCustomExercisesList();
+                    updateAppInfo();
+                    
+                    alert('✅ Backup imported successfully! All data has been restored.');
+                } catch (err) {
+                    alert('❌ Invalid backup file. Please select a valid Coach Pro backup file.');
+                    console.error(err);
+                }
+            };
+            reader.readAsText(file);
+            input.value = '';
+        }
+
+        function clearAllData() {
+            if (confirm('⚠️ WARNING: This will delete ALL data including players, templates, custom exercises, and reset your PIN. This CANNOT be undone.')) {
+                var confirmation = prompt('Type "DELETE" to confirm:');
+                if (confirmation === 'DELETE') {
+                    localStorage.clear();
+                    location.reload();
+                } else {
+                    alert('Data clear cancelled.');
+                }
+            }
+        }
+
+        function updateAppInfo() {
+            document.getElementById('total-players').textContent = players.length;
+            document.getElementById('total-templates').textContent = Object.keys(templates).length;
+            document.getElementById('total-custom-ex').textContent = customExercises.length;
+            
+            var lastBackup = localStorage.getItem('coachLastBackup');
+            if (lastBackup) {
+                document.getElementById('last-backup').textContent = new Date(lastBackup).toLocaleDateString();
+            } else {
+                document.getElementById('last-backup').textContent = 'Never';
+            }
+        }
+
+        // Initialize
+        renderWorkoutList();
+    </script>
+</body>
+</html>
